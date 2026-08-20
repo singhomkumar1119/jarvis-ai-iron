@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /** Cinematic entrance: black fade-in, glowing white wordmark, blob forming behind. */
 export function BootScreen({ onDone, reduceMotion }: { onDone: () => void; reduceMotion: boolean }) {
   const [phase, setPhase] = useState(0);
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
 
   useEffect(() => {
+    const onDone = () => doneRef.current();
     if (reduceMotion) {
       const t = setTimeout(onDone, 300);
       return () => clearTimeout(t);
@@ -17,7 +20,8 @@ export function BootScreen({ onDone, reduceMotion }: { onDone: () => void; reduc
       setTimeout(onDone, 3300),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [onDone, reduceMotion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduceMotion]);
 
   return (
     <div
