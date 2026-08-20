@@ -11,6 +11,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { JarvisProvider, useJarvis } from "@/lib/jarvis-store";
+import { BootScreen } from "@/components/jarvis/BootScreen";
+import { NavBar } from "@/components/jarvis/NavBar";
+import { Ambience } from "@/components/jarvis/Shell";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -77,19 +82,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Jarvis — Cinematic AI assistant" },
+      {
+        name: "description",
+        content:
+          "Jarvis is a premium, cinematic AI assistant with a liquid-glass interface, voice-reactive orb and terminal mode.",
+      },
+      { name: "theme-color", content: "#0a0b0f" },
+      { property: "og:title", content: "Jarvis — Cinematic AI assistant" },
+      {
+        property: "og:description",
+        content: "A calm, futuristic AI workspace with a voice-reactive orb and liquid-glass controls.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -114,13 +128,34 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function JarvisShell() {
+  const { booted, setBooted, settings } = useJarvis();
+
+  return (
+    <>
+      <Ambience />
+      {!booted && (
+        <BootScreen onDone={() => setBooted(true)} reduceMotion={settings.reduceMotion} />
+      )}
+      <div className="min-h-screen">
+        <Outlet />
+      </div>
+      <NavBar />
+      <Toaster position="top-center" />
+    </>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <JarvisProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <JarvisShell />
+      </JarvisProvider>
     </QueryClientProvider>
   );
 }
+
