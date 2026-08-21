@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useJarvis, type Attachment } from "@/lib/jarvis-store";
+import { startRecognition, speechRecognitionSupported, type Recognizer } from "@/lib/speech";
 import { toast } from "sonner";
 
 const MENU = [
