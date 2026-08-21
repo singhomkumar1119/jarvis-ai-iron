@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { Activity as ActivityIcon } from "lucide-react";
 import { JarvisOrb } from "@/components/jarvis/JarvisOrb";
 import { InputBar } from "@/components/jarvis/InputBar";
 import { useJarvis } from "@/lib/jarvis-store";
+import { speak } from "@/lib/speech";
 
 export const Route = createFileRoute("/")({
   head: () => ({
