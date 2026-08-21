@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { cancelSpeech, speak, speakableText } from "@/lib/speech";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -21,6 +22,7 @@ export type Message = {
   code?: { lang: string; source: string } | undefined;
   createdAt: number;
   streaming?: boolean | undefined;
+  error?: boolean | undefined;
   attachments?: Attachment[] | undefined;
 };
 
@@ -37,6 +39,7 @@ export type Settings = {
   voice: "atlas" | "nova" | "orion" | "lumen";
   voiceSpeed: number;
   voiceTone: number;
+  speakReplies: boolean;
   theme: "dark" | "light" | "auto";
   animationIntensity: number;
   blobStyle: "aurora" | "plasma" | "glacier" | "ember";
@@ -53,6 +56,7 @@ const DEFAULT_SETTINGS: Settings = {
   voice: "atlas",
   voiceSpeed: 1,
   voiceTone: 0.5,
+  speakReplies: true,
   theme: "dark",
   animationIntensity: 0.8,
   blobStyle: "aurora",
@@ -62,31 +66,6 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-
-const REPLIES = [
-  "Understood. I've mapped the request and prepared a plan — here is the short version, with detail on request.",
-  "Working from what's available locally. I don't have access to external device data unless you grant permission in Jarvis Status.",
-  "Done. I kept the summary tight; ask me to expand any step and I'll go deeper.",
-  "Here's my read: the fastest path is to isolate the change, verify it, then widen the scope.",
-];
-
-const TERMINAL_REPLIES: { text: string; code?: { lang: string; source: string } }[] = [
-  {
-    text: "Simulated run complete. Output below.",
-    code: {
-      lang: "bash",
-      source: "$ jarvis status --all\n core        online\n gateway     reachable (42ms)\n sandbox     ready\n sessions    1 active",
-    },
-  },
-  {
-    text: "Scaffolded a handler for you.",
-    code: {
-      lang: "ts",
-      source:
-        'export async function handler(req: Request) {\n  const { prompt } = await req.json();\n  return Response.json({ ok: true, prompt });\n}',
-    },
-  },
-];
 
 type Ctx = {
   messages: Message[];
@@ -102,9 +81,11 @@ type Ctx = {
   clearHistory: () => void;
   setActivity: (a: Activity) => void;
   toggleListening: () => void;
+  setListening: (v: boolean) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   requestPermission: (key: PermissionKey) => void;
   revokePermission: (key: PermissionKey) => void;
+  setPermission: (key: PermissionKey, state: PermissionState) => void;
   addTask: (title: string) => void;
 };
 
@@ -116,7 +97,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       id: uid(),
       role: "jarvis",
       channel: "chat",
-      text: "Systems nominal. I'm running locally with placeholder telemetry until you grant permissions.",
+      text: "Systems nominal. Ask me anything — tap the mic and I'll listen, or type and I'll answer out loud.",
       createdAt: Date.now() - 60000,
     },
   ]);
@@ -143,8 +124,12 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
   }, []);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
   const lastPrompt = useRef<Record<string, string>>({});
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   // Only play the cinematic entrance once per session.
   useEffect(() => {
@@ -155,7 +140,6 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Persist settings + history locally (client only).
   useEffect(() => {
     try {
       const raw = localStorage.getItem("jarvis:settings");
@@ -182,111 +166,172 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("reduce-motion", settings.reduceMotion);
   }, [settings.theme, settings.reduceMotion]);
 
-  const clearTimers = useCallback(() => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-  }, []);
+  const extractCode = (text: string) => {
+    const match = text.match(/```(\w+)?\n([\s\S]*?)```/);
+    if (!match) return undefined;
+    return { lang: match[1] ?? "text", source: (match[2] ?? "").trimEnd() };
+  };
 
-  useEffect(() => clearTimers, [clearTimers]);
+  const respond = useCallback(async (channel: "chat" | "terminal") => {
+    abortRef.current?.abort();
+    cancelSpeech();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setActivity("thinking");
 
-  const respond = useCallback(
-    (prompt: string, channel: "chat" | "terminal") => {
-      clearTimers();
-      setActivity("thinking");
-      const id = uid();
-      const payload =
-        channel === "terminal"
-          ? TERMINAL_REPLIES[Math.floor(Math.random() * TERMINAL_REPLIES.length)]!
-          : {
-              text: REPLIES[Math.floor(Math.random() * REPLIES.length)]!,
-              code: undefined as { lang: string; source: string } | undefined,
-            };
+    const history = messagesRef.current
+      .filter((m) => m.channel === channel && m.text.trim() && !m.error)
+      .slice(-20)
+      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
 
-      timers.current.push(
-        setTimeout(() => {
-          setActivity("speaking");
+    const id = uid();
+    let started = false;
+    let full = "";
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history,
+          channel,
+          personality: settingsRef.current.personality,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const detail = (await res.text().catch(() => "")) || "Jarvis couldn't reach the AI gateway.";
+        setMessages((m) => [
+          ...m,
+          { id, role: "jarvis", channel, text: detail, createdAt: Date.now(), error: true },
+        ]);
+        setActivity("idle");
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+        full += chunk;
+        if (!started) {
+          started = true;
           setMessages((m) => [
             ...m,
-            { id, role: "jarvis", channel, text: "", createdAt: Date.now(), streaming: true },
+            { id, role: "jarvis", channel, text: chunk, createdAt: Date.now(), streaming: true },
           ]);
-          const words = payload.text.split(" ");
-          words.forEach((_, i) => {
-            timers.current.push(
-              setTimeout(() => {
-                setMessages((m) =>
-                  m.map((msg) =>
-                    msg.id === id ? { ...msg, text: words.slice(0, i + 1).join(" ") } : msg,
-                  ),
-                );
-              }, i * 55),
-            );
-          });
-          timers.current.push(
-            setTimeout(
-              () => {
-                setMessages((m) =>
-                  m.map((msg) =>
-                    msg.id === id ? { ...msg, streaming: false, code: payload.code } : msg,
-                  ),
-                );
-                setActivity("idle");
-              },
-              words.length * 55 + 260,
-            ),
-          );
-        }, 900),
+        } else {
+          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
+        }
+      }
+
+      const code = extractCode(full);
+      setMessages((m) =>
+        started
+          ? m.map((msg) => (msg.id === id ? { ...msg, text: full, streaming: false, code } : msg))
+          : [...m, { id, role: "jarvis", channel, text: full, createdAt: Date.now(), code }],
       );
-    },
-    [clearTimers],
-  );
+
+      const spoken = speakableText(full);
+      if (settingsRef.current.speakReplies && spoken) {
+        setActivity("speaking");
+        speak(spoken, {
+          voice: settingsRef.current.voice,
+          rate: settingsRef.current.voiceSpeed,
+          tone: settingsRef.current.voiceTone,
+          onEnd: () => setActivity((a) => (a === "speaking" ? "idle" : a)),
+        });
+      } else {
+        setActivity("idle");
+      }
+    } catch (error) {
+      if ((error as Error)?.name === "AbortError") return;
+      setMessages((m) =>
+        started
+          ? m.map((msg) => (msg.id === id ? { ...msg, streaming: false } : msg))
+          : [
+              ...m,
+              {
+                id,
+                role: "jarvis",
+                channel,
+                text: "Jarvis lost the connection. Try again.",
+                createdAt: Date.now(),
+                error: true,
+              },
+            ],
+      );
+      setActivity("idle");
+    }
+  }, []);
 
   const send = useCallback(
     (text: string, channel: "chat" | "terminal", attachments?: Attachment[]) => {
       const trimmed = text.trim();
       if (!trimmed && !attachments?.length) return;
       lastPrompt.current[channel] = trimmed;
-      setMessages((m) => [
-        ...m,
-        { id: uid(), role: "user", channel, text: trimmed, createdAt: Date.now(), attachments },
-      ]);
-      respond(trimmed, channel);
+      const next: Message = {
+        id: uid(),
+        role: "user",
+        channel,
+        text: trimmed,
+        createdAt: Date.now(),
+        attachments,
+      };
+      messagesRef.current = [...messagesRef.current, next];
+      setMessages(messagesRef.current);
+      void respond(channel);
     },
     [respond],
   );
 
   const retryLast = useCallback(
     (channel: "chat" | "terminal") => {
-      const prompt = lastPrompt.current[channel];
-      if (!prompt) return;
-      setMessages((m) => {
-        const idx = [...m].reverse().findIndex((x) => x.channel === channel && x.role === "jarvis");
-        if (idx === -1) return m;
-        const realIdx = m.length - 1 - idx;
-        return m.filter((_, i) => i !== realIdx);
-      });
-      respond(prompt, channel);
+      const idx = [...messagesRef.current].reverse().findIndex((x) => x.channel === channel && x.role === "jarvis");
+      if (idx !== -1) {
+        const realIdx = messagesRef.current.length - 1 - idx;
+        messagesRef.current = messagesRef.current.filter((_, i) => i !== realIdx);
+        setMessages(messagesRef.current);
+      }
+      void respond(channel);
     },
     [respond],
   );
 
   const stop = useCallback(() => {
-    clearTimers();
+    abortRef.current?.abort();
+    abortRef.current = null;
+    cancelSpeech();
     setMessages((m) => m.map((msg) => (msg.streaming ? { ...msg, streaming: false } : msg)));
     setActivity("idle");
-  }, [clearTimers]);
+  }, []);
 
   const clearHistory = useCallback(() => {
-    clearTimers();
+    abortRef.current?.abort();
+    cancelSpeech();
     setMessages([]);
     setActivity("idle");
-  }, [clearTimers]);
+  }, []);
+
+  const setListening = useCallback((v: boolean) => {
+    setActivity((a) => (v ? "listening" : a === "listening" ? "idle" : a));
+  }, []);
 
   const toggleListening = useCallback(() => {
     setActivity((a) => (a === "listening" ? "idle" : "listening"));
   }, []);
 
   const updateSettings = useCallback((patch: Partial<Settings>) => {
+    if (patch.speakReplies === false) cancelSpeech();
     setSettings((s) => ({ ...s, ...patch }));
+  }, []);
+
+  const setPermission = useCallback((key: PermissionKey, state: PermissionState) => {
+    setPermissions((p) => ({ ...p, [key]: state }));
   }, []);
 
   const requestPermission = useCallback((key: PermissionKey) => {
@@ -319,9 +364,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       clearHistory,
       setActivity,
       toggleListening,
+      setListening,
       updateSettings,
       requestPermission,
       revokePermission,
+      setPermission,
       addTask,
     }),
     [
@@ -337,9 +384,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       stop,
       clearHistory,
       toggleListening,
+      setListening,
       updateSettings,
       requestPermission,
       revokePermission,
+      setPermission,
       addTask,
     ],
   );
