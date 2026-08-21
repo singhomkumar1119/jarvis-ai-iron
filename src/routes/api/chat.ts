@@ -43,7 +43,6 @@ export const Route = createFileRoute("/api/chat")({
         const gateway = createLovableAiGatewayProvider(key, getLovableAiGatewayRunId(request));
 
         const modelMessages: ModelMessage[] = [
-          { role: "system", content: systemPrompt(channel, body.personality ?? "balanced") },
           ...messages
             .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
             .slice(-20)
@@ -59,6 +58,7 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const result = streamText({
             model: gateway("google/gemini-3.7-flash"),
+            system: systemPrompt(channel, body.personality ?? "balanced"),
             messages: modelMessages,
             abortSignal: request.signal,
           });
