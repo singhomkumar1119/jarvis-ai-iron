@@ -33,9 +33,44 @@ const STATUS_COPY: Record<string, { title: string; sub: string }> = {
   offline: { title: "Jarvis is offline", sub: "Reconnecting to the gateway" },
 };
 
+function greetingFor(date: Date) {
+  const h = date.getHours();
+  const part = h < 5 ? "Good evening" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  return `${part}, sir. All systems are online. How may I assist you today?`;
+}
+
 function Home() {
-  const { activity, settings, toggleListening, stop } = useJarvis();
+  const { activity, settings, booted, toggleListening, stop, setActivity } = useJarvis();
   const copy = STATUS_COPY[activity] ?? STATUS_COPY["idle"]!;
+  const [greeting, setGreeting] = useState<string | null>(null);
+  const greeted = useRef(false);
+
+  useEffect(() => {
+    if (!booted || greeted.current) return;
+    greeted.current = true;
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("jarvis:greeted") === "1";
+      sessionStorage.setItem("jarvis:greeted", "1");
+    } catch {
+      /* ignore */
+    }
+    if (seen) return;
+    const line = greetingFor(new Date());
+    setGreeting(line);
+    if (!settings.speakReplies) return;
+    const t = setTimeout(() => {
+      setActivity("speaking");
+      speak(line, {
+        voice: settings.voice,
+        rate: settings.voiceSpeed,
+        tone: settings.voiceTone,
+        onEnd: () => setActivity("idle"),
+      });
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [booted]);
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-4 pb-64 pt-16">
