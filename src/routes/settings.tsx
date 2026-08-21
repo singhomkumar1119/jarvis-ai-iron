@@ -108,6 +108,9 @@ function SettingsPage() {
               onChange={(v) => set("personality", v)}
             />
           </Row>
+          <Row label="Speak replies aloud" hint="Jarvis reads answers using your device voice">
+            <Switch checked={settings.speakReplies} onCheckedChange={(v) => set("speakReplies", v)} />
+          </Row>
           <Row label="Voice">
             <Segmented
               value={settings.voice}
