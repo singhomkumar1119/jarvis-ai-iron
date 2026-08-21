@@ -43,7 +43,6 @@ export const Route = createFileRoute("/api/chat")({
         const gateway = createLovableAiGatewayProvider(key, getLovableAiGatewayRunId(request));
 
         const modelMessages: ModelMessage[] = [
-          { role: "system", content: systemPrompt(channel, body.personality ?? "balanced") },
           ...messages
             .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
             .slice(-20)
