@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, type ModelMessage } from "ai";
-import { createLovableAiGatewayProvider, getLovableAiGatewayRunId } from "@/lib/ai-gateway.server";
+import {
+  createLovableAiGatewayProvider,
+  createNvidiaProvider,
+  getLovableAiGatewayRunId,
+} from "@/lib/ai-gateway.server";
 
 type ChatRequestBody = {
   messages?: { role: "user" | "assistant"; content: string }[];
@@ -34,13 +38,18 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Messages are required", { status: 400 });
         }
 
+        const nvidiaKey = process.env["NVIDIA_API_KEY"];
         const key = process.env["LOVABLE_API_KEY"];
-        if (!key) {
+        if (!nvidiaKey && !key) {
           return new Response("AI is not configured for this app.", { status: 500 });
         }
 
         const channel = body.channel === "terminal" ? "terminal" : "chat";
-        const gateway = createLovableAiGatewayProvider(key, getLovableAiGatewayRunId(request));
+        const model = nvidiaKey
+          ? createNvidiaProvider(nvidiaKey)("meta/llama-3.3-70b-instruct")
+          : createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
+              "google/gemini-3.7-flash",
+            );
 
         const modelMessages: ModelMessage[] = [
           ...messages
@@ -57,7 +66,7 @@ export const Route = createFileRoute("/api/chat")({
 
         try {
           const result = streamText({
-            model: gateway("google/gemini-3.7-flash"),
+            model,
             system: systemPrompt(channel, body.personality ?? "balanced"),
             messages: modelMessages,
             abortSignal: request.signal,

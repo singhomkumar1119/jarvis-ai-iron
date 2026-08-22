@@ -63,6 +63,17 @@ export function createLovableAiGatewayProvider(lovableApiKey: string, initialRun
   });
 }
 
+export function createNvidiaProvider(apiKey: string) {
+  return createOpenAICompatible({
+    name: "nvidia",
+    baseURL: "https://integrate.api.nvidia.com/v1",
+    supportsStructuredOutputs: false,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+}
+
 export function getLovableAiGatewayRunId(request: Request) {
   return request.headers.get(LOVABLE_AIG_RUN_ID_HEADER)?.trim() || undefined;
 }
