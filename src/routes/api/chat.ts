@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, type ModelMessage } from "ai";
-import { createLovableAiGatewayProvider, getLovableAiGatewayRunId } from "@/lib/ai-gateway.server";
+import {
+  createLovableAiGatewayProvider,
+  createNvidiaProvider,
+  getLovableAiGatewayRunId,
+} from "@/lib/ai-gateway.server";
 
 type ChatRequestBody = {
   messages?: { role: "user" | "assistant"; content: string }[];
