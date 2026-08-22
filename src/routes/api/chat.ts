@@ -10,6 +10,7 @@ type ChatRequestBody = {
   messages?: { role: "user" | "assistant"; content: string }[];
   channel?: "chat" | "terminal";
   personality?: string;
+  model?: string;
 };
 
 const PERSONALITY: Record<string, string> = {
@@ -45,11 +46,16 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const channel = body.channel === "terminal" ? "terminal" : "chat";
-        const model = nvidiaKey
-          ? createNvidiaProvider(nvidiaKey)("meta/llama-3.3-70b-instruct")
-          : createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
-              "google/gemini-3.7-flash",
-            );
+        const requested = typeof body.model === "string" ? body.model.trim() : "";
+        // Lovable gateway ids are vendor-prefixed with google/ or openai/; everything else is NVIDIA.
+        const useLovable = requested
+          ? /^(google|openai)\//.test(requested) && Boolean(key)
+          : !nvidiaKey;
+        const model = useLovable
+          ? createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
+              requested || "google/gemini-3.7-flash",
+            )
+          : createNvidiaProvider(nvidiaKey!)(requested || "meta/llama-3.3-70b-instruct");
 
         const modelMessages: ModelMessage[] = [
           ...messages
