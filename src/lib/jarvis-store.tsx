@@ -36,6 +36,7 @@ export type Task = {
 
 export type Settings = {
   personality: "concise" | "balanced" | "playful" | "technical";
+  model: string;
   voice: "atlas" | "nova" | "orion" | "lumen";
   voiceSpeed: number;
   voiceTone: number;
@@ -53,6 +54,7 @@ export type PermissionState = "granted" | "denied" | "prompt";
 
 const DEFAULT_SETTINGS: Settings = {
   personality: "balanced",
+  model: "",
   voice: "atlas",
   voiceSpeed: 1,
   voiceTone: 0.5,
@@ -196,6 +198,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
           messages: history,
           channel,
           personality: settingsRef.current.personality,
+          model: settingsRef.current.model || undefined,
         }),
         signal: controller.signal,
       });
