@@ -34,13 +34,18 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Messages are required", { status: 400 });
         }
 
+        const nvidiaKey = process.env["NVIDIA_API_KEY"];
         const key = process.env["LOVABLE_API_KEY"];
-        if (!key) {
+        if (!nvidiaKey && !key) {
           return new Response("AI is not configured for this app.", { status: 500 });
         }
 
         const channel = body.channel === "terminal" ? "terminal" : "chat";
-        const gateway = createLovableAiGatewayProvider(key, getLovableAiGatewayRunId(request));
+        const model = nvidiaKey
+          ? createNvidiaProvider(nvidiaKey)("meta/llama-3.3-70b-instruct")
+          : createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
+              "google/gemini-3.7-flash",
+            );
 
         const modelMessages: ModelMessage[] = [
           ...messages
