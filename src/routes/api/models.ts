@@ -14,6 +14,13 @@ const LOVABLE_MODELS: ModelOption[] = [
   { id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna", provider: "lovable" },
 ];
 
+// Always-available NVIDIA models, pinned to the top so they show even if the
+// /v1/models list omits or filters them.
+const NVIDIA_PINNED: ModelOption[] = [
+  { id: "meta/llama-3.3-70b-instruct", label: "Llama 3.3 70B Instruct", provider: "nvidia" },
+  { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning", label: "Nemotron 3 Nano Omni 30B", provider: "nvidia" },
+];
+
 const EXCLUDE = /embed|rerank|bge|nv-embed|guard|ocr|retrieval|clip|asr|tts|riva|speech|paraphrase|nemoguard|safety|reward|parakeet|canary|diffusion|stable|sana|edify|florence|molmo|vila|codesearch/i;
 
 function prettify(id: string) {
