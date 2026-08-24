@@ -55,7 +55,9 @@ export const Route = createFileRoute("/api/chat")({
           ? createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
               requested || "google/gemini-3.7-flash",
             )
-          : createNvidiaProvider(nvidiaKey!)(requested || "meta/llama-3.3-70b-instruct");
+          : createNvidiaProvider(nvidiaKey!)(
+              requested || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+            );
 
         const modelMessages: ModelMessage[] = [
           ...messages
