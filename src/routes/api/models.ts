@@ -36,7 +36,17 @@ export const Route = createFileRoute("/api/models")({
     handlers: {
       GET: async () => {
         const models: ModelOption[] = [];
+        const seen = new Set<string>();
+        const add = (m: ModelOption) => {
+          if (!seen.has(m.id)) {
+            seen.add(m.id);
+            models.push(m);
+          }
+        };
         const nvidiaKey = process.env["NVIDIA_API_KEY"];
+
+        // Pin the curated NVIDIA models first.
+        for (const m of NVIDIA_PINNED) add(m);
 
         if (nvidiaKey) {
           try {
@@ -45,12 +55,14 @@ export const Route = createFileRoute("/api/models")({
             });
             if (res.ok) {
               const json = (await res.json()) as { data?: { id?: string }[] };
+              const fetched: ModelOption[] = [];
               for (const entry of json.data ?? []) {
                 const id = entry.id;
                 if (!id || EXCLUDE.test(id)) continue;
-                models.push({ id, label: prettify(id), provider: "nvidia" });
+                fetched.push({ id, label: prettify(id), provider: "nvidia" });
               }
-              models.sort((a, b) => a.id.localeCompare(b.id));
+              fetched.sort((a, b) => a.id.localeCompare(b.id));
+              for (const m of fetched) add(m);
             }
           } catch {
             // fall through to gateway models
@@ -58,19 +70,15 @@ export const Route = createFileRoute("/api/models")({
         }
 
         if (process.env["LOVABLE_API_KEY"]) {
-          models.push(...LOVABLE_MODELS);
+          for (const m of LOVABLE_MODELS) add(m);
         }
 
-        const fallback: ModelOption = {
-          id: "meta/llama-3.3-70b-instruct",
-          label: "Llama 3.3 70B Instruct · meta",
-          provider: "nvidia",
-        };
+        const fallback: ModelOption = NVIDIA_PINNED[0]!;
         if (models.length === 0) models.push(fallback);
 
         return Response.json({
           models,
-          defaultModel: nvidiaKey ? fallback.id : (models[0]?.id ?? fallback.id),
+          defaultModel: nvidiaKey ? NVIDIA_PINNED[0]!.id : (models[0]?.id ?? fallback.id),
         });
       },
     },
