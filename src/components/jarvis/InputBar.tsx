@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useJarvis, type Attachment } from "@/lib/jarvis-store";
-import { startRecognition, speechRecognitionSupported, type Recognizer } from "@/lib/speech";
 import { toast } from "sonner";
 
 const MENU = [
@@ -26,10 +25,8 @@ const MENU = [
 ] as const;
 
 export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
-  const { send, activity, setListening, stop, addTask, permissions, requestPermission, setPermission } =
+  const { send, activity, toggleListening, transcript, stop, addTask, permissions, requestPermission } =
     useJarvis();
-  const recRef = useRef<Recognizer | null>(null);
-  const transcriptRef = useRef("");
   const [value, setValue] = useState("");
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -85,63 +82,6 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
 
   const busy = activity === "thinking" || activity === "speaking";
   const listening = activity === "listening";
-
-  useEffect(() => () => recRef.current?.abort(), []);
-
-  const stopListening = () => {
-    recRef.current?.stop();
-    recRef.current = null;
-    setListening(false);
-  };
-
-  const startListening = async () => {
-    if (!speechRecognitionSupported()) {
-      toast("Voice input isn't supported in this browser", {
-        description: "Try Chrome or Edge for live transcription.",
-      });
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((t) => t.stop());
-      setPermission("microphone", "granted");
-    } catch {
-      setPermission("microphone", "denied");
-      toast("Microphone access denied", { description: "Allow the mic in your browser to talk to Jarvis." });
-      return;
-    }
-
-    transcriptRef.current = "";
-    const rec = startRecognition({
-      onPartial: (text) => {
-        transcriptRef.current = text;
-        setValue(text);
-      },
-      onFinal: (text) => {
-        transcriptRef.current = text;
-      },
-      onError: (code) => {
-        if (code !== "aborted" && code !== "no-speech") toast(`Voice input error: ${code}`);
-      },
-      onEnd: () => {
-        recRef.current = null;
-        setListening(false);
-        const text = transcriptRef.current.trim();
-        transcriptRef.current = "";
-        if (text) {
-          setValue("");
-          send(text, channel);
-        }
-      },
-    });
-
-    if (!rec) {
-      toast("Couldn't start voice input");
-      return;
-    }
-    recRef.current = rec;
-    setListening(true);
-  };
 
   return (
     <div
@@ -205,7 +145,7 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
 
         <textarea
           rows={1}
-          value={value}
+          value={listening && transcript ? transcript : value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -223,10 +163,7 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
         />
 
         <button
-          onClick={() => {
-            if (listening) stopListening();
-            else void startListening();
-          }}
+          onClick={() => toggleListening(channel)}
           aria-label={listening ? "Stop listening" : "Start voice input"}
           className={cn(
             "grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border transition-all duration-300 active:scale-90",
