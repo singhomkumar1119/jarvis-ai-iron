@@ -8,7 +8,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { cancelSpeech, speak, speakableText } from "@/lib/speech";
+import {
+  cancelSpeech,
+  speak,
+  speakableText,
+  speechRecognitionSupported,
+  startRecognition,
+  type Recognizer,
+} from "@/lib/speech";
+import { toast } from "sonner";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
