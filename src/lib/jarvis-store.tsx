@@ -103,7 +103,7 @@ type Ctx = {
 
 // Keep a single context instance across hot reloads so consumers never see a
 // stale/empty context (which used to blank the screen during dev updates).
-const globalStore = globalThis as unknown as { __jarvisContext?: React.Context<Ctx | null> };
+const globalStore = globalThis as unknown as { __jarvisContext?: Context<Ctx | null> };
 const JarvisContext = globalStore.__jarvisContext ?? createContext<Ctx | null>(null);
 globalStore.__jarvisContext = JarvisContext;
 
