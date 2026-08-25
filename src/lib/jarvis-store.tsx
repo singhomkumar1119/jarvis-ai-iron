@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type Context,
   type ReactNode,
 } from "react";
 import {
@@ -100,7 +101,11 @@ type Ctx = {
   addTask: (title: string) => void;
 };
 
-const JarvisContext = createContext<Ctx | null>(null);
+// Keep a single context instance across hot reloads so consumers never see a
+// stale/empty context (which used to blank the screen during dev updates).
+const globalStore = globalThis as unknown as { __jarvisContext?: Context<Ctx | null> };
+const JarvisContext = globalStore.__jarvisContext ?? createContext<Ctx | null>(null);
+globalStore.__jarvisContext = JarvisContext;
 
 export function JarvisProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([
