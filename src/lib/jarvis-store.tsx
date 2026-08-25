@@ -90,8 +90,9 @@ type Ctx = {
   stop: () => void;
   clearHistory: () => void;
   setActivity: (a: Activity) => void;
-  toggleListening: () => void;
+  toggleListening: (channel?: "chat" | "terminal") => void;
   setListening: (v: boolean) => void;
+  transcript: string;
   updateSettings: (patch: Partial<Settings>) => void;
   requestPermission: (key: PermissionKey) => void;
   revokePermission: (key: PermissionKey) => void;
