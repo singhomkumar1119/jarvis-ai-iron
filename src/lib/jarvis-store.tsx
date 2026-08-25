@@ -140,6 +140,10 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
   settingsRef.current = settings;
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const recRef = useRef<Recognizer | null>(null);
+  const transcriptRef = useRef("");
+  const [transcript, setTranscript] = useState("");
+  const sendRef = useRef<((text: string, channel: "chat" | "terminal") => void) | null>(null);
 
   // Only play the cinematic entrance once per session.
   useEffect(() => {
