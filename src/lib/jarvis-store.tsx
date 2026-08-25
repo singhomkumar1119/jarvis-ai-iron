@@ -305,6 +305,8 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     [respond],
   );
 
+  sendRef.current = send;
+
   const retryLast = useCallback(
     (channel: "chat" | "terminal") => {
       const idx = [...messagesRef.current].reverse().findIndex((x) => x.channel === channel && x.role === "jarvis");
@@ -442,6 +444,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       messages,
       tasks,
       activity,
+      transcript,
       settings,
       permissions,
       booted,
@@ -463,6 +466,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       messages,
       tasks,
       activity,
+      transcript,
       settings,
       permissions,
       booted,
