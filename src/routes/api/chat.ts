@@ -72,6 +72,20 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("The last message must come from the user.", { status: 400 });
         }
 
+        const errorMessage = (error: unknown) => {
+          const status =
+            typeof error === "object" && error && "statusCode" in error
+              ? Number((error as { statusCode?: number }).statusCode) || 500
+              : 500;
+          if (status === 429) return "Jarvis is rate limited right now. Try again in a moment.";
+          if (status === 402) return "Jarvis is out of AI credits. Add credits in Lovable to continue.";
+          const detail =
+            typeof error === "object" && error && "message" in error
+              ? String((error as { message?: string }).message ?? "")
+              : "";
+          return `Jarvis couldn't reach the AI gateway.${detail ? ` (${detail.slice(0, 200)})` : ""}`;
+        };
+
         try {
           const result = streamText({
             model,
@@ -80,19 +94,43 @@ export const Route = createFileRoute("/api/chat")({
             abortSignal: request.signal,
           });
 
-          return result.toTextStreamResponse();
+          // Stream manually so mid-stream failures and empty completions (some
+          // reasoning models emit no visible text) never surface as a blank reply.
+          const encoder = new TextEncoder();
+          const stream = new ReadableStream<Uint8Array>({
+            async start(controller) {
+              let emitted = 0;
+              try {
+                for await (const chunk of result.textStream) {
+                  if (!chunk) continue;
+                  emitted += chunk.length;
+                  controller.enqueue(encoder.encode(chunk));
+                }
+                if (emitted === 0) {
+                  controller.enqueue(
+                    encoder.encode(
+                      "Jarvis had nothing to say for that. Try rephrasing, or pick another model in the picker.",
+                    ),
+                  );
+                }
+              } catch (error) {
+                if (!request.signal.aborted) {
+                  controller.enqueue(encoder.encode((emitted ? "\n\n" : "") + errorMessage(error)));
+                }
+              } finally {
+                controller.close();
+              }
+            },
+          });
+
+          return new Response(stream, {
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+              "Cache-Control": "no-cache, no-transform",
+            },
+          });
         } catch (error) {
-          const status =
-            typeof error === "object" && error && "statusCode" in error
-              ? Number((error as { statusCode?: number }).statusCode) || 500
-              : 500;
-          const message =
-            status === 429
-              ? "Jarvis is rate limited right now. Try again in a moment."
-              : status === 402
-                ? "Jarvis is out of AI credits. Add credits in Lovable to continue."
-                : "Jarvis couldn't reach the AI gateway.";
-          return new Response(message, { status });
+          return new Response(errorMessage(error), { status: 500 });
         }
       },
     },
