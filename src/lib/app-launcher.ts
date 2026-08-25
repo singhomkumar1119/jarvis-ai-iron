@@ -73,7 +73,7 @@ const OPEN_VERBS = /\b(open|launch|start|run|go to|take me to|show me)\b/i;
 
 export type LaunchIntent = {
   app: AppEntry;
-  query?: string;
+  query?: string | undefined;
   url: string;
 };
 
