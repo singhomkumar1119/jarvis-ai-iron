@@ -20,10 +20,10 @@ const NVIDIA_PINNED: ModelOption[] = [
   // Fastest first — this is also the default model.
   { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning", label: "Nemotron 3 Nano Omni 30B (fastest)", provider: "nvidia" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b", label: "Nemotron 3 Ultra 550B", provider: "nvidia" },
-  { id: "meta/llama-3.3-70b-instruct", label: "Llama 3.3 70B Instruct (slow)", provider: "nvidia" },
+  
 ];
 
-const EXCLUDE = /embed|rerank|bge|nv-embed|guard|ocr|retrieval|clip|asr|tts|riva|speech|paraphrase|nemoguard|safety|reward|parakeet|canary|diffusion|stable|sana|edify|florence|molmo|vila|codesearch/i;
+const EXCLUDE = /llama-3\.3-70b|embed|rerank|bge|nv-embed|guard|ocr|retrieval|clip|asr|tts|riva|speech|paraphrase|nemoguard|safety|reward|parakeet|canary|diffusion|stable|sana|edify|florence|molmo|vila|codesearch/i;
 
 function prettify(id: string) {
   const [vendor, ...rest] = id.split("/");

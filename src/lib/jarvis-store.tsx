@@ -8,7 +8,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { cancelSpeech, speak, speakableText } from "@/lib/speech";
+import {
+  cancelSpeech,
+  speak,
+  speakableText,
+  speechRecognitionSupported,
+  startRecognition,
+  type Recognizer,
+} from "@/lib/speech";
+import { toast } from "sonner";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -82,8 +90,9 @@ type Ctx = {
   stop: () => void;
   clearHistory: () => void;
   setActivity: (a: Activity) => void;
-  toggleListening: () => void;
+  toggleListening: (channel?: "chat" | "terminal") => void;
   setListening: (v: boolean) => void;
+  transcript: string;
   updateSettings: (patch: Partial<Settings>) => void;
   requestPermission: (key: PermissionKey) => void;
   revokePermission: (key: PermissionKey) => void;
@@ -132,6 +141,10 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
   settingsRef.current = settings;
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const recRef = useRef<Recognizer | null>(null);
+  const transcriptRef = useRef("");
+  const [transcript, setTranscript] = useState("");
+  const sendRef = useRef<((text: string, channel: "chat" | "terminal") => void) | null>(null);
 
   // Only play the cinematic entrance once per session.
   useEffect(() => {
@@ -292,6 +305,8 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     [respond],
   );
 
+  sendRef.current = send;
+
   const retryLast = useCallback(
     (channel: "chat" | "terminal") => {
       const idx = [...messagesRef.current].reverse().findIndex((x) => x.channel === channel && x.role === "jarvis");
@@ -320,13 +335,85 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     setActivity("idle");
   }, []);
 
-  const setListening = useCallback((v: boolean) => {
-    setActivity((a) => (v ? "listening" : a === "listening" ? "idle" : a));
+  const stopVoice = useCallback(() => {
+    recRef.current?.stop();
+    recRef.current = null;
+    setActivity((a) => (a === "listening" ? "idle" : a));
   }, []);
 
-  const toggleListening = useCallback(() => {
-    setActivity((a) => (a === "listening" ? "idle" : "listening"));
-  }, []);
+  const startVoice = useCallback(
+    async (channel: "chat" | "terminal" = "chat") => {
+      if (recRef.current) return;
+      if (!speechRecognitionSupported()) {
+        toast("Voice input isn't supported in this browser", {
+          description: "Use Chrome or Edge (on https) for live transcription.",
+        });
+        return;
+      }
+      cancelSpeech();
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((t) => t.stop());
+        setPermissions((p) => ({ ...p, microphone: "granted" }));
+      } catch {
+        setPermissions((p) => ({ ...p, microphone: "denied" }));
+        toast("Microphone access denied", {
+          description: "Allow the mic in your browser settings to talk to Jarvis.",
+        });
+        return;
+      }
+
+      transcriptRef.current = "";
+      const rec = startRecognition({
+        onPartial: (text) => {
+          transcriptRef.current = text;
+          setTranscript(text);
+        },
+        onFinal: (text) => {
+          transcriptRef.current = text;
+        },
+        onError: (code) => {
+          if (code === "not-allowed" || code === "service-not-allowed") {
+            toast("Microphone blocked", { description: "Allow mic access for this site." });
+          } else if (code !== "aborted" && code !== "no-speech") {
+            toast(`Voice input error: ${code}`);
+          }
+        },
+        onEnd: () => {
+          recRef.current = null;
+          setTranscript("");
+          setActivity((a) => (a === "listening" ? "idle" : a));
+          const text = transcriptRef.current.trim();
+          transcriptRef.current = "";
+          if (text) sendRef.current?.(text, channel);
+        },
+      });
+
+      if (!rec) {
+        toast("Couldn't start voice input");
+        return;
+      }
+      recRef.current = rec;
+      setActivity("listening");
+    },
+    [],
+  );
+
+  const setListening = useCallback(
+    (v: boolean) => {
+      if (v) void startVoice();
+      else stopVoice();
+    },
+    [startVoice, stopVoice],
+  );
+
+  const toggleListening = useCallback(
+    (channel: "chat" | "terminal" = "chat") => {
+      if (recRef.current) stopVoice();
+      else void startVoice(channel);
+    },
+    [startVoice, stopVoice],
+  );
 
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     if (patch.speakReplies === false) cancelSpeech();
@@ -357,6 +444,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       messages,
       tasks,
       activity,
+      transcript,
       settings,
       permissions,
       booted,
@@ -378,6 +466,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       messages,
       tasks,
       activity,
+      transcript,
       settings,
       permissions,
       booted,
