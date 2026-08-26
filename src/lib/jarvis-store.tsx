@@ -250,15 +250,37 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const code = extractCode(full);
+      const completedText = full.trim();
+      const replyFailed =
+        !completedText ||
+        /^(Jarvis (?:couldn't|completed the request without)|Jarvis is rate limited|Jarvis is out of AI credits)/i.test(
+          completedText,
+        );
+      const visibleText = completedText || "Jarvis completed the request without an answer. Please retry.";
+      const code = extractCode(visibleText);
       setMessages((m) =>
         started
-          ? m.map((msg) => (msg.id === id ? { ...msg, text: full, streaming: false, code } : msg))
-          : [...m, { id, role: "jarvis", channel, text: full, createdAt: Date.now(), code }],
+          ? m.map((msg) =>
+              msg.id === id
+                ? { ...msg, text: visibleText, streaming: false, code, error: replyFailed }
+                : msg,
+            )
+          : [
+              ...m,
+              {
+                id,
+                role: "jarvis",
+                channel,
+                text: visibleText,
+                createdAt: Date.now(),
+                code,
+                error: replyFailed,
+              },
+            ],
       );
 
-      const spoken = speakableText(full);
-      if (settingsRef.current.speakReplies && spoken) {
+      const spoken = speakableText(visibleText);
+      if (!replyFailed && settingsRef.current.speakReplies && spoken) {
         setActivity("speaking");
         speak(spoken, {
           voice: settingsRef.current.voice,
