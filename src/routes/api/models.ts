@@ -80,7 +80,11 @@ export const Route = createFileRoute("/api/models")({
 
         return Response.json({
           models,
-          defaultModel: nvidiaKey ? NVIDIA_PINNED[0]!.id : (models[0]?.id ?? fallback.id),
+          defaultModel: process.env["LOVABLE_API_KEY"]
+            ? LOVABLE_MODELS[0]!.id
+            : nvidiaKey
+              ? NVIDIA_PINNED[0]!.id
+              : (models[0]?.id ?? fallback.id),
         });
       },
     },

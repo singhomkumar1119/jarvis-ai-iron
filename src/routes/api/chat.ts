@@ -50,14 +50,15 @@ export const Route = createFileRoute("/api/chat")({
         // Lovable gateway ids are vendor-prefixed with google/ or openai/; everything else is NVIDIA.
         const useLovable = requested
           ? /^(google|openai)\//.test(requested) && Boolean(key)
-          : !nvidiaKey;
+          : Boolean(key);
+        const selectedModelId = requested || (useLovable
+          ? "google/gemini-3.7-flash"
+          : "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning");
         const model = useLovable
           ? createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
-              requested || "google/gemini-3.7-flash",
+              selectedModelId,
             )
-          : createNvidiaProvider(nvidiaKey!)(
-              requested || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
-            );
+          : createNvidiaProvider(nvidiaKey!)(selectedModelId);
 
         const modelMessages: ModelMessage[] = [
           ...messages
@@ -100,22 +101,52 @@ export const Route = createFileRoute("/api/chat")({
           const stream = new ReadableStream<Uint8Array>({
             async start(controller) {
               let emitted = 0;
+              let reasoning = "";
+              const enqueue = (text: string) => {
+                if (!text) return;
+                emitted += text.length;
+                controller.enqueue(encoder.encode(text));
+              };
+
+              const consume = async (resultToConsume: ReturnType<typeof streamText>) => {
+                for await (const part of resultToConsume.fullStream) {
+                  if (part.type === "text-delta") {
+                    enqueue(part.text);
+                  } else if (part.type === "reasoning-delta") {
+                    reasoning += part.text;
+                  } else if (part.type === "error") {
+                    throw part.error;
+                  }
+                }
+              };
+
               try {
-                for await (const chunk of result.textStream) {
-                  if (!chunk) continue;
-                  emitted += chunk.length;
-                  controller.enqueue(encoder.encode(chunk));
+                await consume(result);
+                if (emitted === 0) {
+                  const reasoningFallback = reasoning.trim();
+                  if (reasoningFallback) {
+                    enqueue(reasoningFallback);
+                  } else if (key && selectedModelId !== "google/gemini-3.7-flash") {
+                    const fallbackGateway = createLovableAiGatewayProvider(
+                      key,
+                      getLovableAiGatewayRunId(request),
+                    );
+                    const fallback = streamText({
+                      model: fallbackGateway("google/gemini-3.7-flash"),
+                      system: systemPrompt(channel, body.personality ?? "balanced"),
+                      messages: modelMessages,
+                      abortSignal: request.signal,
+                      maxRetries: 0,
+                    });
+                    await consume(fallback);
+                  }
                 }
                 if (emitted === 0) {
-                  controller.enqueue(
-                    encoder.encode(
-                      "Jarvis had nothing to say for that. Try rephrasing, or pick another model in the picker.",
-                    ),
-                  );
+                  enqueue("Jarvis completed the request without an answer. Please retry.");
                 }
               } catch (error) {
                 if (!request.signal.aborted) {
-                  controller.enqueue(encoder.encode((emitted ? "\n\n" : "") + errorMessage(error)));
+                  enqueue((emitted ? "\n\n" : "") + errorMessage(error));
                 }
               } finally {
                 controller.close();

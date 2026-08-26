@@ -89,7 +89,9 @@ export function ChatMessage({
             mono && "font-mono text-[13px]",
             isUser
               ? "bg-primary text-primary-foreground shadow-[0_18px_40px_-24px_var(--electric)]"
-              : "glass-soft text-foreground",
+              : message.error
+                ? "glass-soft border-bad/40 text-foreground"
+                : "glass-soft text-foreground",
           )}
         >
           {message.text || (message.streaming ? <TypingIndicator /> : null)}
@@ -151,7 +153,10 @@ export function ChatMessage({
             ) : (
               <button
                 onClick={onRetry}
-                className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-2 py-1 text-[11px] transition-colors hover:text-foreground",
+                  message.error ? "text-bad" : "text-muted-foreground",
+                )}
               >
                 <RotateCcw className="h-3 w-3" /> Retry
               </button>
