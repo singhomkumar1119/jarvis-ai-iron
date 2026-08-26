@@ -84,6 +84,9 @@ export const Route = createFileRoute("/api/chat")({
             typeof error === "object" && error && "message" in error
               ? String((error as { message?: string }).message ?? "")
               : "";
+          if (status === 400) return `Jarvis received an invalid AI request.${detail ? ` (${detail.slice(0, 200)})` : ""}`;
+          if (status === 401) return "Jarvis AI is not configured correctly. Check the server API key.";
+          if (status === 403) return detail || "Jarvis AI is blocked by the workspace policy.";
           return `Jarvis couldn't reach the AI gateway.${detail ? ` (${detail.slice(0, 200)})` : ""}`;
         };
 
@@ -93,6 +96,7 @@ export const Route = createFileRoute("/api/chat")({
             system: systemPrompt(channel, body.personality ?? "balanced"),
             messages: modelMessages,
             abortSignal: request.signal,
+            maxRetries: 0,
           });
 
           // Stream manually so mid-stream failures and empty completions (some
