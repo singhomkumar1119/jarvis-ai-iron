@@ -18,6 +18,7 @@ import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiModelsRouteImport } from './routes/api/models'
 import { Route as ApiTrackRouteImport } from './routes/api/track'
+import { Route as ApiTrackUploadRouteImport } from './routes/api/track-upload'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const ApiTrackRoute = ApiTrackRouteImport.update({
   path: '/api/track',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTrackUploadRoute = ApiTrackUploadRouteImport.update({
+  id: '/api/track-upload',
+  path: '/api/track-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/models'
     | '/api/track'
+    | '/api/track-upload'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/models'
     | '/api/track'
+    | '/api/track-upload'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/models'
     | '/api/track'
+    | '/api/track-upload'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiModelsRoute: typeof ApiModelsRoute
   ApiTrackRoute: typeof ApiTrackRoute
+  ApiTrackUploadRoute: typeof ApiTrackUploadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/track-upload': {
+      id: '/api/track-upload'
+      path: '/api/track-upload'
+      fullPath: '/api/track-upload'
+      preLoaderRoute: typeof ApiTrackUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiModelsRoute: ApiModelsRoute,
   ApiTrackRoute: ApiTrackRoute,
+  ApiTrackUploadRoute: ApiTrackUploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
