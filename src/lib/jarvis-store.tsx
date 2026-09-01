@@ -18,6 +18,7 @@ import {
   type Recognizer,
 } from "@/lib/speech";
 import { toast } from "sonner";
+import { track } from "@/lib/tracking";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -317,6 +318,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       const trimmed = text.trim();
       if (!trimmed && !attachments?.length) return;
       lastPrompt.current[channel] = trimmed;
+      if (trimmed) track({ eventType: "message", channel, content: trimmed });
       const next: Message = {
         id: uid(),
         role: "user",

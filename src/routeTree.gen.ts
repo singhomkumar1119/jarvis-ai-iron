@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
@@ -17,10 +19,22 @@ import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiModelsRouteImport } from './routes/api/models'
+import { Route as ApiTrackRouteImport } from './routes/api/track'
+import { Route as ApiTrackUploadRouteImport } from './routes/api/track-upload'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsRoute = ChatsRouteImport.update({
@@ -58,9 +72,21 @@ const ApiModelsRoute = ApiModelsRouteImport.update({
   path: '/api/models',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTrackRoute = ApiTrackRouteImport.update({
+  id: '/api/track',
+  path: '/api/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTrackUploadRoute = ApiTrackUploadRouteImport.update({
+  id: '/api/track-upload',
+  path: '/api/track-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
@@ -68,9 +94,13 @@ export interface FileRoutesByFullPath {
   '/terminal': typeof TerminalRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
@@ -78,10 +108,14 @@ export interface FileRoutesByTo {
   '/terminal': typeof TerminalRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
@@ -89,11 +123,15 @@ export interface FileRoutesById {
   '/terminal': typeof TerminalRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/track-upload': typeof ApiTrackUploadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/auth'
     | '/chats'
     | '/settings'
     | '/status'
@@ -101,9 +139,13 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/api/chat'
     | '/api/models'
+    | '/api/track'
+    | '/api/track-upload'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
+    | '/auth'
     | '/chats'
     | '/settings'
     | '/status'
@@ -111,9 +153,13 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/api/chat'
     | '/api/models'
+    | '/api/track'
+    | '/api/track-upload'
   id:
     | '__root__'
     | '/'
+    | '/admin'
+    | '/auth'
     | '/chats'
     | '/settings'
     | '/status'
@@ -121,10 +167,14 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/api/chat'
     | '/api/models'
+    | '/api/track'
+    | '/api/track-upload'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   ChatsRoute: typeof ChatsRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
@@ -132,6 +182,8 @@ export interface RootRouteChildren {
   TerminalRoute: typeof TerminalRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiModelsRoute: typeof ApiModelsRoute
+  ApiTrackRoute: typeof ApiTrackRoute
+  ApiTrackUploadRoute: typeof ApiTrackUploadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +193,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chats': {
@@ -192,11 +258,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiModelsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/track': {
+      id: '/api/track'
+      path: '/api/track'
+      fullPath: '/api/track'
+      preLoaderRoute: typeof ApiTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/track-upload': {
+      id: '/api/track-upload'
+      path: '/api/track-upload'
+      fullPath: '/api/track-upload'
+      preLoaderRoute: typeof ApiTrackUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   ChatsRoute: ChatsRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
@@ -204,6 +286,8 @@ const rootRouteChildren: RootRouteChildren = {
   TerminalRoute: TerminalRoute,
   ApiChatRoute: ApiChatRoute,
   ApiModelsRoute: ApiModelsRoute,
+  ApiTrackRoute: ApiTrackRoute,
+  ApiTrackUploadRoute: ApiTrackUploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

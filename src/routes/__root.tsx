@@ -16,6 +16,7 @@ import { BootScreen } from "@/components/jarvis/BootScreen";
 import { NavBar } from "@/components/jarvis/NavBar";
 import { Ambience } from "@/components/jarvis/Shell";
 import { Toaster } from "@/components/ui/sonner";
+import { track } from "@/lib/tracking";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function JarvisShell() {
   const { booted, setBooted, settings } = useJarvis();
+
+  useEffect(() => {
+    track({ eventType: "visit" });
+  }, []);
+
+
 
   return (
     <>
