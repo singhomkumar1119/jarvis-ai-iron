@@ -4,6 +4,7 @@ type SpeechRecognitionLike = {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives?: number;
   start: () => void;
   stop: () => void;
   abort: () => void;
@@ -32,14 +33,20 @@ export function startRecognition(handlers: {
   onFinal?: (text: string) => void;
   onError?: (code: string) => void;
   onEnd?: () => void;
+  continuous?: boolean;
 }): Recognizer | null {
   const Ctor = getRecognitionCtor();
   if (!Ctor) return null;
 
   const rec = new Ctor();
   rec.lang = typeof navigator !== "undefined" ? navigator.language || "en-US" : "en-US";
-  rec.continuous = false;
+  rec.continuous = handlers.continuous ?? true;
   rec.interimResults = true;
+  try {
+    rec.maxAlternatives = 1;
+  } catch {
+    /* ignore */
+  }
 
   let finalText = "";
 
@@ -48,17 +55,17 @@ export function startRecognition(handlers: {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       const transcript = result[0]?.transcript ?? "";
-      if (result.isFinal) finalText += transcript;
+      if (result.isFinal) finalText += (finalText ? " " : "") + transcript.trim();
       else interim += transcript;
     }
-    handlers.onPartial?.((finalText + interim).trim());
+    const combined = (finalText + (interim ? " " + interim : "")).trim();
+    handlers.onPartial?.(combined);
+    if (finalText.trim()) handlers.onFinal?.(finalText.trim());
   };
 
   rec.onerror = (event: any) => handlers.onError?.(String(event?.error ?? "unknown"));
 
   rec.onend = () => {
-    const text = finalText.trim();
-    if (text) handlers.onFinal?.(text);
     handlers.onEnd?.();
   };
 

@@ -149,6 +149,9 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
   messagesRef.current = messages;
   const recRef = useRef<Recognizer | null>(null);
   const transcriptRef = useRef("");
+  const silenceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const manualStopRef = useRef(false);
+  const voiceChannelRef = useRef<"chat" | "terminal">("chat");
   const [transcript, setTranscript] = useState("");
   const sendRef = useRef<((text: string, channel: "chat" | "terminal") => void) | null>(null);
 
@@ -364,11 +367,29 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     setActivity("idle");
   }, []);
 
-  const stopVoice = useCallback(() => {
-    recRef.current?.stop();
+  const finishVoice = useCallback((submit: boolean) => {
+    if (silenceRef.current) {
+      clearTimeout(silenceRef.current);
+      silenceRef.current = null;
+    }
+    manualStopRef.current = true;
+    const rec = recRef.current;
     recRef.current = null;
+    const text = transcriptRef.current.trim();
+    transcriptRef.current = "";
+    const channel = voiceChannelRef.current;
+    try {
+      if (submit) rec?.stop();
+      else rec?.abort();
+    } catch {
+      /* ignore */
+    }
+    setTranscript("");
     setActivity((a) => (a === "listening" ? "idle" : a));
+    if (submit && text) sendRef.current?.(text, channel);
   }, []);
+
+  const stopVoice = useCallback(() => finishVoice(true), [finishVoice]);
 
   const startVoice = useCallback(
     async (channel: "chat" | "terminal" = "chat") => {
@@ -393,40 +414,66 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       }
 
       transcriptRef.current = "";
-      const rec = startRecognition({
-        onPartial: (text) => {
-          transcriptRef.current = text;
-          setTranscript(text);
-        },
-        onFinal: (text) => {
-          transcriptRef.current = text;
-        },
-        onError: (code) => {
-          if (code === "not-allowed" || code === "service-not-allowed") {
-            toast("Microphone blocked", { description: "Allow mic access for this site." });
-          } else if (code !== "aborted" && code !== "no-speech") {
-            toast(`Voice input error: ${code}`);
-          }
-        },
-        onEnd: () => {
-          recRef.current = null;
-          setTranscript("");
-          setActivity((a) => (a === "listening" ? "idle" : a));
-          const text = transcriptRef.current.trim();
-          transcriptRef.current = "";
-          if (text) sendRef.current?.(text, channel);
-        },
-      });
+      voiceChannelRef.current = channel;
+      manualStopRef.current = false;
 
+      const armSilenceTimer = () => {
+        if (silenceRef.current) clearTimeout(silenceRef.current);
+        silenceRef.current = setTimeout(() => {
+          if (recRef.current && transcriptRef.current.trim()) finishVoice(true);
+        }, 2200);
+      };
+
+      const launch = () => {
+        const base = transcriptRef.current.trim();
+        const merge = (text: string) => (base ? `${base} ${text}`.trim() : text.trim());
+        const rec = startRecognition({
+          continuous: true,
+          onPartial: (text) => {
+            transcriptRef.current = merge(text);
+            setTranscript(transcriptRef.current);
+            armSilenceTimer();
+          },
+          onFinal: (text) => {
+            transcriptRef.current = merge(text);
+          },
+          onError: (code) => {
+            if (code === "not-allowed" || code === "service-not-allowed") {
+              manualStopRef.current = true;
+              toast("Microphone blocked", { description: "Allow mic access for this site." });
+            } else if (code !== "aborted" && code !== "no-speech" && code !== "network") {
+              toast(`Voice input error: ${code}`);
+            }
+          },
+          onEnd: () => {
+            // Chrome ends the session on brief pauses — restart so long
+            // sentences and slow speakers aren't cut off mid-thought.
+            if (manualStopRef.current) return;
+            const next = launch();
+            if (!next) {
+              recRef.current = null;
+              setTranscript("");
+              setActivity((a) => (a === "listening" ? "idle" : a));
+              const text = transcriptRef.current.trim();
+              transcriptRef.current = "";
+              if (text) sendRef.current?.(text, voiceChannelRef.current);
+            }
+          },
+        });
+        if (rec) recRef.current = rec;
+        return rec;
+      };
+
+      const rec = launch();
       if (!rec) {
         toast("Couldn't start voice input");
         return;
       }
-      recRef.current = rec;
       setActivity("listening");
     },
-    [],
+    [finishVoice],
   );
+
 
   const setListening = useCallback(
     (v: boolean) => {
