@@ -149,6 +149,9 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
   messagesRef.current = messages;
   const recRef = useRef<Recognizer | null>(null);
   const transcriptRef = useRef("");
+  const silenceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const manualStopRef = useRef(false);
+  const voiceChannelRef = useRef<"chat" | "terminal">("chat");
   const [transcript, setTranscript] = useState("");
   const sendRef = useRef<((text: string, channel: "chat" | "terminal") => void) | null>(null);
 
@@ -422,15 +425,17 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       };
 
       const launch = () => {
+        const base = transcriptRef.current.trim();
+        const merge = (text: string) => (base ? `${base} ${text}`.trim() : text.trim());
         const rec = startRecognition({
           continuous: true,
           onPartial: (text) => {
-            transcriptRef.current = text;
-            setTranscript(text);
+            transcriptRef.current = merge(text);
+            setTranscript(transcriptRef.current);
             armSilenceTimer();
           },
           onFinal: (text) => {
-            transcriptRef.current = text;
+            transcriptRef.current = merge(text);
           },
           onError: (code) => {
             if (code === "not-allowed" || code === "service-not-allowed") {
