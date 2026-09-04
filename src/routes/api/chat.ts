@@ -1,17 +1,76 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, type ModelMessage } from "ai";
+import { z } from "zod";
 import {
   createLovableAiGatewayProvider,
   createNvidiaProvider,
   getLovableAiGatewayRunId,
 } from "@/lib/ai-gateway.server";
 
-type ChatRequestBody = {
-  messages?: { role: "user" | "assistant"; content: string }[];
-  channel?: "chat" | "terminal";
-  personality?: string;
-  model?: string;
-};
+// --- Abuse guard -----------------------------------------------------------
+const MAX_MESSAGE_CHARS = 8_000;
+const MAX_MESSAGES = 30;
+const MAX_TOTAL_CHARS = 40_000;
+
+const chatBodySchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().max(MAX_MESSAGE_CHARS),
+      }),
+    )
+    .min(1)
+    .max(MAX_MESSAGES),
+  channel: z.enum(["chat", "terminal"]).optional(),
+  personality: z.string().max(32).optional(),
+  model: z.string().max(120).optional(),
+});
+
+// Sliding-window request budget per client, keyed by IP.
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS_PER_WINDOW = 20;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_REQUESTS_PER_DAY = 400;
+
+type Bucket = { minute: number[]; day: number[] };
+const buckets = new Map<string, Bucket>();
+
+function clientIp(request: Request) {
+  const h = request.headers;
+  const fwd = h.get("x-forwarded-for");
+  return (
+    h.get("cf-connecting-ip") ??
+    (fwd ? (fwd.split(",")[0] ?? "").trim() : null) ??
+    h.get("x-real-ip") ??
+    "unknown"
+  );
+}
+
+function rateLimit(request: Request): { ok: true } | { ok: false; retryAfter: number } {
+  const now = Date.now();
+  const ip = clientIp(request);
+  const bucket = buckets.get(ip) ?? { minute: [], day: [] };
+  bucket.minute = bucket.minute.filter((t) => now - t < WINDOW_MS);
+  bucket.day = bucket.day.filter((t) => now - t < DAY_MS);
+
+  if (buckets.size > 5_000) buckets.clear();
+
+  if (bucket.minute.length >= MAX_REQUESTS_PER_WINDOW) {
+    buckets.set(ip, bucket);
+    return { ok: false, retryAfter: 60 };
+  }
+  if (bucket.day.length >= MAX_REQUESTS_PER_DAY) {
+    buckets.set(ip, bucket);
+    return { ok: false, retryAfter: 3600 };
+  }
+
+  bucket.minute.push(now);
+  bucket.day.push(now);
+  buckets.set(ip, bucket);
+  return { ok: true };
+}
+
 
 const PERSONALITY: Record<string, string> = {
   concise: "Answer in as few words as possible. No filler, no preamble.",
