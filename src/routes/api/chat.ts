@@ -92,10 +92,31 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = (await request.json()) as ChatRequestBody;
+        const limited = rateLimit(request);
+        if (!limited.ok) {
+          return new Response(
+            "Jarvis is receiving too many requests from this device. Try again shortly.",
+            { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
+          );
+        }
+
+        let raw: unknown;
+        try {
+          raw = await request.json();
+        } catch {
+          return new Response("Invalid request body.", { status: 400 });
+        }
+
+        const parsed = chatBodySchema.safeParse(raw);
+        if (!parsed.success) {
+          return new Response("Invalid or oversized chat request.", { status: 400 });
+        }
+        const body = parsed.data;
         const messages = body.messages;
-        if (!Array.isArray(messages) || messages.length === 0) {
-          return new Response("Messages are required", { status: 400 });
+
+        const totalChars = messages.reduce((sum, m) => sum + m.content.length, 0);
+        if (totalChars > MAX_TOTAL_CHARS) {
+          return new Response("Conversation is too long for a single request.", { status: 413 });
         }
 
         const nvidiaKey = process.env["NVIDIA_API_KEY"];
@@ -103,6 +124,7 @@ export const Route = createFileRoute("/api/chat")({
         if (!nvidiaKey && !key) {
           return new Response("AI is not configured for this app.", { status: 500 });
         }
+
 
         const channel = body.channel === "terminal" ? "terminal" : "chat";
         const requested = typeof body.model === "string" ? body.model.trim() : "";
