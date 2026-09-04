@@ -29,7 +29,6 @@ type Filter = "all" | "message" | "upload" | "visit";
 function AdminPage() {
   const navigate = useNavigate();
   const load = useServerFn(listVisitorEvents);
-  const claim = useServerFn(claimFirstAdmin);
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "denied">("loading");
   const [filter, setFilter] = useState<Filter>("all");
@@ -41,14 +40,14 @@ function AdminPage() {
       return;
     }
     try {
-      await claim({});
       const res = await load({ data: { limit: 300 } });
       setEvents(res.events);
       setState("ready");
     } catch {
       setState("denied");
     }
-  }, [claim, load, navigate]);
+  }, [load, navigate]);
+
 
   useEffect(() => {
     void refresh();
