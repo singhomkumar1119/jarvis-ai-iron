@@ -1,5 +1,4 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
-import type { ToolDefinition } from "@lovable.dev/mcp-js";
 import listActivityTool from "./tools/list-activity";
 import activitySummaryTool from "./tools/activity-summary";
 
@@ -15,5 +14,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [listActivityTool, activitySummaryTool] as unknown as ToolDefinition[],
+  tools: [listActivityTool, activitySummaryTool] as unknown as never[],
 });
