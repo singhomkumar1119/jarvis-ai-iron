@@ -69,7 +69,8 @@ function AdminPage() {
         <Panel>
           <p className="text-sm text-foreground">This account isn't an admin.</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            The first account created becomes the admin. Sign in with that account.
+            Admin access is granted server-side only. Sign in with the operator account.
+
           </p>
           <button
             onClick={async () => {
