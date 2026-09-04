@@ -1,8 +1,9 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
+import type { AnyToolDefinition } from "@lovable.dev/mcp-js";
 import listActivityTool from "./tools/list-activity";
 import activitySummaryTool from "./tools/activity-summary";
 
-const projectRef = import.meta.env['VITE_SUPABASE_PROJECT_ID'] ?? "project-ref-unset";
+const projectRef = import.meta.env['VITE_SUPABASE_PROJECT_ID'] as string | undefined ?? "project-ref-unset";
 
 export default defineMcp({
   name: "jarvis-orb",
@@ -14,5 +15,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [listActivityTool, activitySummaryTool],
+  tools: [listActivityTool, activitySummaryTool] as unknown as AnyToolDefinition[],
 });
