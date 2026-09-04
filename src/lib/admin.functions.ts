@@ -73,20 +73,6 @@ export const listVisitorEvents = createServerFn({ method: "POST" })
     return { events };
   });
 
-// Grants the admin role to the first account that claims it. Once an admin
-// exists, this is a no-op for everyone else.
-export const claimFirstAdmin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { count } = await supabaseAdmin
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin");
-    if ((count ?? 0) > 0) return { granted: false };
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .insert({ user_id: context.userId, role: "admin" });
-    if (error) return { granted: false };
-    return { granted: true };
-  });
+// Admin roles are seeded server-side only (database migration / trusted script).
+// There is intentionally no self-service way to claim the admin role.
+
