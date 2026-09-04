@@ -27,6 +27,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +41,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
+          options: { emailRedirectTo: `${window.location.origin}${next || "/admin"}` },
         });
         if (error) throw error;
         toast("Account created", { description: "You can sign in now." });
@@ -48,11 +49,13 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        void navigate({ to: "/admin" });
+        if (next) window.location.href = next;
+        else void navigate({ to: "/admin" });
       }
     } catch (err) {
       toast("Sign in failed", { description: (err as Error).message });
     } finally {
+
       setBusy(false);
     }
   };
