@@ -13,14 +13,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatsRouteImport } from './routes/chats'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiModelsRouteImport } from './routes/api/models'
 import { Route as ApiTrackRouteImport } from './routes/api/track'
 import { Route as ApiTrackUploadRouteImport } from './routes/api/track-upload'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +43,11 @@ const AuthRoute = AuthRouteImport.update({
 const ChatsRoute = ChatsRouteImport.update({
   id: '/chats',
   path: '/chats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -62,6 +70,12 @@ const TerminalRoute = TerminalRouteImport.update({
   path: '/terminal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -82,34 +96,45 @@ const ApiTrackUploadRoute = ApiTrackUploadRouteImport.update({
   path: '/api/track-upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
   '/api/track-upload': typeof ApiTrackUploadRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
   '/api/track-upload': typeof ApiTrackUploadRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,14 +142,17 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/api/models': typeof ApiModelsRoute
   '/api/track': typeof ApiTrackRoute
   '/api/track-upload': typeof ApiTrackUploadRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,42 +161,51 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/chats'
+    | '/mcp'
     | '/settings'
     | '/status'
     | '/tasks'
     | '/terminal'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/api/models'
     | '/api/track'
     | '/api/track-upload'
+    | '/.lovable/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/auth'
     | '/chats'
+    | '/mcp'
     | '/settings'
     | '/status'
     | '/tasks'
     | '/terminal'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/api/models'
     | '/api/track'
     | '/api/track-upload'
+    | '/.lovable/oauth/consent'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
     | '/chats'
+    | '/mcp'
     | '/settings'
     | '/status'
     | '/tasks'
     | '/terminal'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/api/models'
     | '/api/track'
     | '/api/track-upload'
+    | '/.lovable/oauth/consent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,14 +213,17 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ChatsRoute: typeof ChatsRoute
+  McpRoute: typeof McpRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
   TasksRoute: typeof TasksRoute
   TerminalRoute: typeof TerminalRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiModelsRoute: typeof ApiModelsRoute
   ApiTrackRoute: typeof ApiTrackRoute
   ApiTrackUploadRoute: typeof ApiTrackUploadRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -216,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -242,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/terminal'
       fullPath: '/terminal'
       preLoaderRoute: typeof TerminalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -272,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTrackUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -280,14 +341,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ChatsRoute: ChatsRoute,
+  McpRoute: McpRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
   TasksRoute: TasksRoute,
   TerminalRoute: TerminalRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
   ApiModelsRoute: ApiModelsRoute,
   ApiTrackRoute: ApiTrackRoute,
   ApiTrackUploadRoute: ApiTrackUploadRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
