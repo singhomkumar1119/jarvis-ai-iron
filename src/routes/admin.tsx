@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { claimFirstAdmin, listVisitorEvents, type VisitorEvent } from "@/lib/admin.functions";
+import { listVisitorEvents, type VisitorEvent } from "@/lib/admin.functions";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { cn } from "@/lib/utils";
 
