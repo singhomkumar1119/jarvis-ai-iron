@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "sdk_version": "2.0.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://kpveitpeevfwwhmiryoe.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "jarvis-orb",
+      "version": "0.1.0",
+      "title": "Jarvis Orb"
+    },
+    "tools": [
+      {
+        "name": "list_activity",
+        "title": "List Jarvis activity",
+        "description": "List recent Jarvis visitor activity events (visits, messages, uploads) for the signed-in operator. Admin access is enforced by the database.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "How many events to return (default 50)."
+            },
+            "eventType": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Filter by event type, e.g. 'visit', 'message', 'upload'."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "activity_summary",
+        "title": "Summarize Jarvis activity",
+        "description": "Summarize Jarvis visitor activity over a recent time window: totals by event type, device, browser, and unique sessions.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90,
+              "description": "How many days back to summarize (default 7)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
