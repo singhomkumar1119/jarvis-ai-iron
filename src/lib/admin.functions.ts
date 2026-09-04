@@ -23,14 +23,23 @@ export type VisitorEvent = {
   file_url?: string | null;
 };
 
+async function isAdminUser(
+  supabase: { from: (t: "user_roles") => any },
+  userId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  return Boolean(data);
+}
+
 export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    return { admin: Boolean(data) };
+    return { admin: await isAdminUser(context.supabase, context.userId) };
   });
 
 export const listVisitorEvents = createServerFn({ method: "POST" })
@@ -39,11 +48,10 @@ export const listVisitorEvents = createServerFn({ method: "POST" })
     limit: Math.min(Math.max(input?.limit ?? 200, 1), 500),
   }))
   .handler(async ({ data, context }): Promise<{ events: VisitorEvent[] }> => {
-    const { data: admin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!admin) throw new Error("Forbidden");
+    if (!(await isAdminUser(context.supabase, context.userId))) {
+      throw new Error("Forbidden");
+    }
+
 
     const { data: rows, error } = await context.supabase
       .from("visitor_events")
