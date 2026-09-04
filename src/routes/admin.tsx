@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { claimFirstAdmin, listVisitorEvents, type VisitorEvent } from "@/lib/admin.functions";
+import { listVisitorEvents, type VisitorEvent } from "@/lib/admin.functions";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,6 @@ type Filter = "all" | "message" | "upload" | "visit";
 function AdminPage() {
   const navigate = useNavigate();
   const load = useServerFn(listVisitorEvents);
-  const claim = useServerFn(claimFirstAdmin);
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "denied">("loading");
   const [filter, setFilter] = useState<Filter>("all");
@@ -41,14 +40,14 @@ function AdminPage() {
       return;
     }
     try {
-      await claim({});
       const res = await load({ data: { limit: 300 } });
       setEvents(res.events);
       setState("ready");
     } catch {
       setState("denied");
     }
-  }, [claim, load, navigate]);
+  }, [load, navigate]);
+
 
   useEffect(() => {
     void refresh();
@@ -70,7 +69,8 @@ function AdminPage() {
         <Panel>
           <p className="text-sm text-foreground">This account isn't an admin.</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            The first account created becomes the admin. Sign in with that account.
+            Admin access is granted server-side only. Sign in with the operator account.
+
           </p>
           <button
             onClick={async () => {
