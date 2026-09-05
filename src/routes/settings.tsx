@@ -109,7 +109,7 @@ function SettingsPage() {
             />
           </Row>
           <Row label="Speak replies aloud" hint="Jarvis reads answers using your device voice">
-            <Switch checked={settings.speakReplies} onCheckedChange={(v) => set("speakReplies", v)} />
+            <Switch aria-label="Speak replies aloud" checked={settings.speakReplies} onCheckedChange={(v) => set("speakReplies", v)} />
           </Row>
           <Row label="Voice">
             <Segmented
@@ -120,6 +120,7 @@ function SettingsPage() {
           </Row>
           <Row label="Voice speed" hint={`${settings.voiceSpeed.toFixed(2)}×`}>
             <Slider
+              aria-label="Voice speed"
               className="w-44"
               min={0.5}
               max={2}
@@ -130,6 +131,7 @@ function SettingsPage() {
           </Row>
           <Row label="Voice tone" hint="Warmer ↔ brighter">
             <Slider
+              aria-label="Voice tone"
               className="w-44"
               min={0}
               max={1}
@@ -158,6 +160,7 @@ function SettingsPage() {
           </Row>
           <Row label="Animation intensity" hint={`${Math.round(settings.animationIntensity * 100)}%`}>
             <Slider
+              aria-label="Animation intensity"
               className="w-44"
               min={0}
               max={1}
@@ -168,12 +171,13 @@ function SettingsPage() {
           </Row>
           <Row label="Reduce motion" hint="Disables blob movement, morphing and transitions">
             <Switch
+              aria-label="Reduce motion"
               checked={settings.reduceMotion}
               onCheckedChange={(v) => set("reduceMotion", v)}
             />
           </Row>
           <Row label="Notifications">
-            <Switch checked={settings.notifications} onCheckedChange={(v) => set("notifications", v)} />
+            <Switch aria-label="Notifications" checked={settings.notifications} onCheckedChange={(v) => set("notifications", v)} />
           </Row>
         </Panel>
 
@@ -194,13 +198,14 @@ function SettingsPage() {
               }
             >
               <Switch
+                aria-label={`Allow ${p.label}`}
                 checked={permissions[p.key] === "granted"}
                 onCheckedChange={(v) => (v ? requestPermission(p.key) : revokePermission(p.key))}
               />
             </Row>
           ))}
           <Row label="Save chat history" hint="Stored locally on this device only">
-            <Switch checked={settings.saveHistory} onCheckedChange={(v) => set("saveHistory", v)} />
+            <Switch aria-label="Save chat history" checked={settings.saveHistory} onCheckedChange={(v) => set("saveHistory", v)} />
           </Row>
           <Row label="Clear conversation history">
             <button

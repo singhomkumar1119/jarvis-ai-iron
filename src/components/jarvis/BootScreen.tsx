@@ -57,7 +57,7 @@ export function BootScreen({ onDone, reduceMotion }: { onDone: () => void; reduc
             backdropFilter: "blur(18px)",
           }}
         />
-        <h1
+        <p
           className={cn(
             "relative select-none text-6xl font-semibold tracking-[0.42em] text-foreground transition-all duration-1000 sm:text-7xl",
             phase >= 1 ? "opacity-100 blur-0" : "translate-y-2 opacity-0 blur-lg",
@@ -65,7 +65,7 @@ export function BootScreen({ onDone, reduceMotion }: { onDone: () => void; reduc
           style={{ textShadow: "0 0 42px color-mix(in oklab, var(--foreground) 55%, transparent)" }}
         >
           JARVIS
-        </h1>
+        </p>
       </div>
       <p
         className={cn(

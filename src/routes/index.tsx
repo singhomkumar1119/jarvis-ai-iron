@@ -93,8 +93,9 @@ function Home() {
 
       <div className="mt-10 animate-rise text-center">
         <h1 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-          {copy.title}
+          Jarvis — Your Cinematic AI Assistant
         </h1>
+        <p className="mt-3 text-base text-foreground/90">{copy.title}</p>
         <p className="mt-2 text-sm text-muted-foreground">{copy.sub}</p>
       </div>
 

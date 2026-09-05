@@ -146,6 +146,7 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
 
         <textarea
           rows={1}
+          aria-label={channel === "terminal" ? "Terminal command for Jarvis" : "Message Jarvis"}
           value={listening && transcript ? transcript : value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
