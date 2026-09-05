@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "aDoOLhBy75KSkp51ZPvHD7r2vZHPyn7rXLqkRcyTvRY" },
       { title: "Jarvis — Cinematic AI assistant" },
       {
         name: "description",
