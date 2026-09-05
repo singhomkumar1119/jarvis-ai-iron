@@ -36,6 +36,7 @@ function Tasks() {
   return (
     <Page>
       <PageHeader title="Tasks" subtitle="What Jarvis is working on right now" />
+      <h2 className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">Active and queued tasks</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {tasks.map((t) => {
           const Icon = ICONS[t.state];
@@ -46,7 +47,7 @@ function Tasks() {
                   className={cn("mt-0.5 h-4.5 w-4.5 shrink-0", TONE[t.state], t.state === "running" && "animate-spin")}
                 />
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-sm font-medium text-foreground">{t.title}</h2>
+                  <h3 className="truncate text-sm font-medium text-foreground">{t.title}</h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">{t.detail}</p>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div

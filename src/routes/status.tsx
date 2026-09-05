@@ -119,6 +119,7 @@ function Status() {
         subtitle="Live signals. Device data stays unavailable until you grant permission."
       />
 
+      <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">Current activity</h2>
       <Panel className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Current activity</p>
@@ -132,6 +133,7 @@ function Status() {
         />
       </Panel>
 
+      <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">Device and connection signals</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <StatusCard
           icon={Clock}
