@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as TerminalRouteImport } from './routes/terminal'
@@ -53,6 +54,11 @@ const McpRoute = McpRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatusRoute = StatusRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/chats': typeof ChatsRoute
   '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/chats': typeof ChatsRoute
   '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/chats': typeof ChatsRoute
   '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/mcp'
     | '/settings'
+    | '/sitemap.xml'
     | '/status'
     | '/tasks'
     | '/terminal'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/mcp'
     | '/settings'
+    | '/sitemap.xml'
     | '/status'
     | '/tasks'
     | '/terminal'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/mcp'
     | '/settings'
+    | '/sitemap.xml'
     | '/status'
     | '/tasks'
     | '/terminal'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   ChatsRoute: typeof ChatsRoute
   McpRoute: typeof McpRoute
   SettingsRoute: typeof SettingsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
   TasksRoute: typeof TasksRoute
   TerminalRoute: typeof TerminalRoute
@@ -268,6 +281,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/status': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatsRoute: ChatsRoute,
   McpRoute: McpRoute,
   SettingsRoute: SettingsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
   TasksRoute: TasksRoute,
   TerminalRoute: TerminalRoute,
