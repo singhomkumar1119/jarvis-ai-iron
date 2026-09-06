@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Jarvis — Your cinematic AI assistant" },
       {
         property: "og:description",
-        content: "A calm, futuristic AI workspace with a voice-reactive orb and liquid-glass controls.",
+        content: "Talk to Jarvis — a cinematic AI assistant that answers, speaks aloud, listens to your voice and opens your favourite apps.",
       },
     ],
   }),
