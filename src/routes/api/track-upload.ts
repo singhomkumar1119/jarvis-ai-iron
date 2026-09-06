@@ -55,10 +55,13 @@ export const Route = createFileRoute("/api/track-upload")({
         const safeName = file.name.replace(/[^\w.\-]+/g, "_").slice(-120) || "upload";
         const path = `${sessionId}/${Date.now()}-${safeName}`;
 
+        const declaredType = (file.type || "").split(";")[0]?.trim().toLowerCase() ?? "";
+        const storedType = INLINE_SAFE_TYPES.has(declaredType) ? declaredType : "application/octet-stream";
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { error: upErr } = await supabaseAdmin.storage
           .from("uploads")
-          .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+          .upload(path, file, { contentType: storedType, upsert: false });
         if (upErr) return new Response("Upload failed", { status: 500 });
 
         await supabaseAdmin.from("visitor_events").insert({
