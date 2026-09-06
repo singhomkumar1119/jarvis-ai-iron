@@ -22,7 +22,15 @@ import { track } from "@/lib/tracking";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
-export type Attachment = { id: string; name: string; kind: "file" | "image" | "document" };
+export type Attachment = {
+  id: string;
+  name: string;
+  kind: "file" | "image" | "document";
+  /** MIME type of the file, when known. */
+  mediaType?: string | undefined;
+  /** Inline `data:` URL so Jarvis can actually read the file. */
+  dataUrl?: string | undefined;
+};
 
 export type Message = {
   id: string;
