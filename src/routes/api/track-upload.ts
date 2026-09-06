@@ -2,6 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
+// Only these types are stored with their real content type. Anything else is
+// stored as a generic binary blob so it can never be rendered/executed inline
+// when an admin opens the signed link (an SVG or HTML file labelled as an
+// image would otherwise run script in the admin's browser).
+const INLINE_SAFE_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "text/plain",
+]);
+
+/** Restrict a client-supplied session id to a safe, short identifier. */
+function safeSessionId(value: unknown): string {
+  const cleaned = String(value ?? "")
+    .replace(/[^A-Za-z0-9_-]+/g, "")
+    .slice(0, 64);
+  return cleaned || "anonymous";
+}
+
 function ip(request: Request): string | null {
   const h = request.headers;
   const fwd = h.get("x-forwarded-for");
