@@ -69,7 +69,8 @@ export const Route = createFileRoute("/api/track-upload")({
           event_type: "upload",
           channel: kind,
           file_name: file.name.slice(0, 300),
-          file_type: file.type || null,
+          // Record the type the file is actually served with, not the client claim.
+          file_type: storedType,
           file_size: file.size,
           file_path: path,
           ip_address: ip(request),
