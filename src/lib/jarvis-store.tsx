@@ -222,6 +222,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
           .map((a) => ({ name: a.name, mediaType: a.mediaType ?? "application/octet-stream", dataUrl: a.dataUrl! })),
       }));
 
+    // Only the newest turn carries file data — older ones would blow up the payload.
+    history.forEach((h, i) => {
+      if (i < history.length - 1) h.attachments = undefined;
+    });
+
     const id = uid();
     let started = false;
     let full = "";
