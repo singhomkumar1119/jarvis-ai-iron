@@ -212,9 +212,15 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     setActivity("thinking");
 
     const history = messagesRef.current
-      .filter((m) => m.channel === channel && m.text.trim() && !m.error)
+      .filter((m) => m.channel === channel && (m.text.trim() || m.attachments?.length) && !m.error)
       .slice(-20)
-      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
+      .map((m) => ({
+        role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text || (m.attachments?.length ? "Please look at the attached file(s)." : ""),
+        attachments: m.attachments
+          ?.filter((a) => a.dataUrl)
+          .map((a) => ({ name: a.name, mediaType: a.mediaType ?? "application/octet-stream", dataUrl: a.dataUrl! })),
+      }));
 
     const id = uid();
     let started = false;
