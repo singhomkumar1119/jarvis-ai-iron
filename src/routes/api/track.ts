@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
+
 
 const schema = z.object({
   sessionId: z.string().min(1).max(120),
@@ -33,9 +35,14 @@ export const Route = createFileRoute("/api/track")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Public endpoint: cap anonymous callers before touching the database.
+        const limit = checkRateLimit("track", request, { perMinute: 30, perDay: 1_000 });
+        if (!limit.ok) return limitedResponse(limit);
+
         const parsed = schema.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return new Response("Invalid payload", { status: 400 });
         const d = parsed.data;
+
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { error } = await supabaseAdmin.from("visitor_events").insert({

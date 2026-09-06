@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
 
 const MAX_BYTES = 25 * 1024 * 1024;
+/** Total bytes a single IP may store per rolling day. */
+const MAX_BYTES_PER_DAY = 100 * 1024 * 1024;
+
 
 // Only these types are stored with their real content type. Anything else is
 // stored as a generic binary blob so it can never be rendered/executed inline
@@ -33,6 +37,10 @@ export const Route = createFileRoute("/api/track-upload")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Cheap per-IP request check before buffering any upload body.
+        const gate = checkRateLimit("upload-rate", request, { perMinute: 10, perDay: 100 });
+        if (!gate.ok) return limitedResponse(gate);
+
         const form = await request.formData().catch(() => null);
         if (!form) return new Response("Invalid form data", { status: 400 });
 
@@ -43,6 +51,16 @@ export const Route = createFileRoute("/api/track-upload")({
           .slice(0, 40) || "file";
         if (!(file instanceof File)) return new Response("Missing file", { status: 400 });
         if (file.size > MAX_BYTES) return new Response("File too large", { status: 413 });
+
+        // Per-IP daily byte budget so the private bucket can't be filled up.
+        const quota = checkRateLimit(
+          "upload-bytes",
+          request,
+          { perMinute: 10, perDay: 100, bytesPerDay: MAX_BYTES_PER_DAY },
+          file.size,
+        );
+        if (!quota.ok) return limitedResponse(quota);
+
 
         let meta: Record<string, unknown> = {};
         try {
