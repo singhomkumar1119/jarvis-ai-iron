@@ -68,7 +68,16 @@ export const listVisitorEvents = createServerFn({ method: "POST" })
         .from("uploads")
         .createSignedUrls(paths, 60 * 60);
       const map = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
-      for (const e of events) if (e.file_path) e.file_url = map.get(e.file_path) ?? null;
+      // Only plain raster images are safe to open inline; everything else is
+      // forced to download so a disguised HTML/SVG payload can't run script.
+      const INLINE_OK = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+      for (const e of events) {
+        if (!e.file_path) continue;
+        const url = map.get(e.file_path) ?? null;
+        e.file_url = url && !INLINE_OK.has((e.file_type ?? "").toLowerCase())
+          ? `${url}${url.includes("?") ? "&" : "?"}download=`
+          : url;
+      }
     }
     return { events };
   });
