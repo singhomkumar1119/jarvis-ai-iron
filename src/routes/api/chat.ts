@@ -138,24 +138,63 @@ export const Route = createFileRoute("/api/chat")({
 
         const channel = body.channel === "terminal" ? "terminal" : "chat";
         const requested = typeof body.model === "string" ? body.model.trim() : "";
+        const hasAttachments = messages.some((m) => (m.attachments?.length ?? 0) > 0);
         // Lovable gateway ids are vendor-prefixed with google/ or openai/; everything else is NVIDIA.
-        const useLovable = requested
+        let useLovable = requested
           ? /^(google|openai)\//.test(requested) && Boolean(key)
           : Boolean(key);
-        const selectedModelId = requested || (useLovable
+        let selectedModelId = requested || (useLovable
           ? "google/gemini-3.7-flash"
           : "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning");
+        // Files and images need a multimodal model — fall back to Gemini for those turns.
+        if (hasAttachments && key && !/^google\//.test(selectedModelId)) {
+          useLovable = true;
+          selectedModelId = "google/gemini-3.7-flash";
+        }
         const model = useLovable
           ? createLovableAiGatewayProvider(key!, getLovableAiGatewayRunId(request))(
               selectedModelId,
             )
           : createNvidiaProvider(nvidiaKey!)(selectedModelId);
 
+        const decodeText = (dataUrl: string) => {
+          try {
+            const base64 = dataUrl.split(",")[1] ?? "";
+            const text = atob(base64);
+            return text.slice(0, 20_000);
+          } catch {
+            return "";
+          }
+        };
+
+        const buildContent = (m: (typeof messages)[number]) => {
+          const files = m.attachments ?? [];
+          if (!files.length) return m.content;
+          const parts: Array<Record<string, unknown>> = [];
+          if (m.content.trim()) parts.push({ type: "text", text: m.content });
+          for (const f of files) {
+            if (f.mediaType.startsWith("image/")) {
+              parts.push({ type: "image", image: f.dataUrl });
+            } else if (f.mediaType === "application/pdf") {
+              parts.push({ type: "file", data: f.dataUrl, mediaType: f.mediaType });
+            } else if (/^text\/|json|xml|csv|javascript|typescript/.test(f.mediaType) || !f.mediaType) {
+              const text = decodeText(f.dataUrl);
+              parts.push({ type: "text", text: `Attached file "${f.name}":\n\n${text}` });
+            } else {
+              parts.push({
+                type: "text",
+                text: `The user attached "${f.name}" (${f.mediaType}), which you cannot read directly. Say so and ask for a text, image or PDF version.`,
+              });
+            }
+          }
+          return parts;
+        };
+
         const modelMessages: ModelMessage[] = [
           ...messages
-            .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
+            .filter((m) => m.content.trim().length > 0 || (m.attachments?.length ?? 0) > 0)
             .slice(-20)
-            .map((m) => ({ role: m.role, content: m.content }) as ModelMessage),
+            .map((m) => ({ role: m.role, content: buildContent(m) }) as ModelMessage),
         ];
 
         // Gemini rejects requests ending on an assistant turn.
