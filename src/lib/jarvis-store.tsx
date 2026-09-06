@@ -22,7 +22,15 @@ import { track } from "@/lib/tracking";
 
 export type Activity = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
-export type Attachment = { id: string; name: string; kind: "file" | "image" | "document" };
+export type Attachment = {
+  id: string;
+  name: string;
+  kind: "file" | "image" | "document";
+  /** MIME type of the file, when known. */
+  mediaType?: string | undefined;
+  /** Inline `data:` URL so Jarvis can actually read the file. */
+  dataUrl?: string | undefined;
+};
 
 export type Message = {
   id: string;
@@ -204,9 +212,20 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     setActivity("thinking");
 
     const history = messagesRef.current
-      .filter((m) => m.channel === channel && m.text.trim() && !m.error)
+      .filter((m) => m.channel === channel && (m.text.trim() || m.attachments?.length) && !m.error)
       .slice(-20)
-      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: m.text }));
+      .map((m) => ({
+        role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text || (m.attachments?.length ? "Please look at the attached file(s)." : ""),
+        attachments: m.attachments
+          ?.filter((a) => a.dataUrl)
+          .map((a) => ({ name: a.name, mediaType: a.mediaType ?? "application/octet-stream", dataUrl: a.dataUrl! })),
+      }));
+
+    // Only the newest turn carries file data — older ones would blow up the payload.
+    history.forEach((h, i) => {
+      if (i < history.length - 1) h.attachments = undefined;
+    });
 
     const id = uid();
     let started = false;

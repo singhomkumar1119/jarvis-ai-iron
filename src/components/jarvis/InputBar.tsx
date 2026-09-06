@@ -46,12 +46,37 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
     return () => document.removeEventListener("pointerdown", onDown);
   }, [menuOpen]);
 
+  const MAX_INLINE_BYTES = 8 * 1024 * 1024;
+
+  const readDataUrl = (file: File) =>
+    new Promise<string | undefined>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : undefined);
+      reader.onerror = () => resolve(undefined);
+      reader.readAsDataURL(file);
+    });
+
   const attach = (files: FileList | null, kind: Attachment["kind"]) => {
     if (!files?.length) return;
     const list = Array.from(files);
-    setPending((p) => [...p, ...list.map((f) => ({ id: `${f.name}-${f.size}`, name: f.name, kind }))]);
+    setPending((p) => [
+      ...p,
+      ...list.map((f) => ({ id: `${f.name}-${f.size}`, name: f.name, kind, mediaType: f.type })),
+    ]);
     // Store the real file privately so the operator can review it later.
     void Promise.all(list.map((f) => uploadTrackedFile(f, kind)));
+    // Also read it inline so Jarvis can actually see/read what was attached.
+    list.forEach(async (f) => {
+      if (f.size > MAX_INLINE_BYTES) {
+        toast(`${f.name} is too large for Jarvis to read`, { description: "Attach files under 8 MB." });
+        return;
+      }
+      const dataUrl = await readDataUrl(f);
+      if (!dataUrl) return;
+      setPending((p) =>
+        p.map((a) => (a.id === `${f.name}-${f.size}` ? { ...a, dataUrl, mediaType: f.type } : a)),
+      );
+    });
   };
 
   const handleMenu = (key: (typeof MENU)[number]["key"]) => {
