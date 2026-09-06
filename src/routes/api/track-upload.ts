@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
 
 const MAX_BYTES = 25 * 1024 * 1024;
+/** Total bytes a single IP may store per rolling day. */
+const MAX_BYTES_PER_DAY = 100 * 1024 * 1024;
+
 
 // Only these types are stored with their real content type. Anything else is
 // stored as a generic binary blob so it can never be rendered/executed inline

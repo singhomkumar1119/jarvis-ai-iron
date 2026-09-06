@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
+
 
 const schema = z.object({
   sessionId: z.string().min(1).max(120),
