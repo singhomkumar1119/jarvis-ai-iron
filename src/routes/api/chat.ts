@@ -18,6 +18,16 @@ const chatBodySchema = z.object({
       z.object({
         role: z.enum(["user", "assistant"]),
         content: z.string().max(MAX_MESSAGE_CHARS),
+        attachments: z
+          .array(
+            z.object({
+              name: z.string().max(300),
+              mediaType: z.string().max(120),
+              dataUrl: z.string().max(12_000_000),
+            }),
+          )
+          .max(6)
+          .optional(),
       }),
     )
     .min(1)
