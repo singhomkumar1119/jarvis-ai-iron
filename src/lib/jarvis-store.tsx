@@ -445,7 +445,16 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
 
       const launch = () => {
         const base = transcriptRef.current.trim();
-        const merge = (text: string) => (base ? `${base} ${text}`.trim() : text.trim());
+        const merge = (raw: string) => {
+          const text = raw.trim();
+          if (!base) return text;
+          if (!text) return base;
+          // Guard against the recognizer replaying words we already captured.
+          if (base.toLowerCase().endsWith(text.toLowerCase())) return base;
+          if (text.toLowerCase().startsWith(base.toLowerCase())) return text;
+          return `${base} ${text}`.trim();
+        };
+
         const rec = startRecognition({
           continuous: true,
           onPartial: (text) => {
