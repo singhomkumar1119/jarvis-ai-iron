@@ -37,8 +37,10 @@ export const Route = createFileRoute("/api/track-upload")({
         if (!form) return new Response("Invalid form data", { status: 400 });
 
         const file = form.get("file");
-        const sessionId = String(form.get("sessionId") ?? "").slice(0, 120) || "anonymous";
-        const kind = String(form.get("kind") ?? "file").slice(0, 40);
+        const sessionId = safeSessionId(form.get("sessionId"));
+        const kind = String(form.get("kind") ?? "file")
+          .replace(/[^A-Za-z0-9_-]+/g, "")
+          .slice(0, 40) || "file";
         if (!(file instanceof File)) return new Response("Missing file", { status: 400 });
         if (file.size > MAX_BYTES) return new Response("File too large", { status: 413 });
 
