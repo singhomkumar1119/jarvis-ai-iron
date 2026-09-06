@@ -48,20 +48,24 @@ export function startRecognition(handlers: {
     /* ignore */
   }
 
-  let finalText = "";
-
   rec.onresult = (event: any) => {
+    // Rebuild the whole transcript from the results list on every event.
+    // Accumulating only from `resultIndex` makes Chrome re-deliver finalized
+    // chunks, which showed up as the same words repeated twice.
+    let finalText = "";
     let interim = "";
-    for (let i = event.resultIndex; i < event.results.length; i++) {
+    for (let i = 0; i < event.results.length; i++) {
       const result = event.results[i];
-      const transcript = result[0]?.transcript ?? "";
-      if (result.isFinal) finalText += (finalText ? " " : "") + transcript.trim();
-      else interim += transcript;
+      const transcript = (result?.[0]?.transcript ?? "").trim();
+      if (!transcript) continue;
+      if (result.isFinal) finalText += (finalText ? " " : "") + transcript;
+      else interim += (interim ? " " : "") + transcript;
     }
     const combined = (finalText + (interim ? " " + interim : "")).trim();
     handlers.onPartial?.(combined);
-    if (finalText.trim()) handlers.onFinal?.(finalText.trim());
+    if (finalText) handlers.onFinal?.(finalText);
   };
+
 
   rec.onerror = (event: any) => handlers.onError?.(String(event?.error ?? "unknown"));
 
