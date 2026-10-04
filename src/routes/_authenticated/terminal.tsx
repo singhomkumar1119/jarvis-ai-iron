@@ -5,7 +5,7 @@ import { InputBar } from "@/components/jarvis/InputBar";
 import { Page, PageHeader } from "@/components/jarvis/Shell";
 import { useJarvis } from "@/lib/jarvis-store";
 
-export const Route = createFileRoute("/terminal")({
+export const Route = createFileRoute("/_authenticated/terminal")({
   head: () => ({
     meta: [
       { title: "Terminal — Jarvis" },

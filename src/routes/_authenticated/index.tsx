@@ -6,7 +6,7 @@ import { InputBar } from "@/components/jarvis/InputBar";
 import { useJarvis } from "@/lib/jarvis-store";
 import { speak } from "@/lib/speech";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Jarvis — Your cinematic AI assistant" },
