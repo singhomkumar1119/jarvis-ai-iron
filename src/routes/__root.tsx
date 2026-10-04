@@ -44,6 +44,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    const msg = String(error?.message ?? "");
+    if (/Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(msg)) {
+      try {
+        const k = "jarvis-chunk-reload";
+        const t = Number(sessionStorage.getItem(k) || 0);
+        if (Date.now() - t > 10000) {
+          sessionStorage.setItem(k, String(Date.now()));
+          window.location.reload();
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
