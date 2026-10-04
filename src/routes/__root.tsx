@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -18,6 +19,7 @@ import { NavBar } from "@/components/jarvis/NavBar";
 import { Ambience } from "@/components/jarvis/Shell";
 import { Toaster } from "@/components/ui/sonner";
 import { track } from "@/lib/tracking";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -152,23 +154,49 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function JarvisShell() {
   const { booted, setBooted, settings } = useJarvis();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const router = useRouter();
+  const isAuthPage = pathname === "/auth";
 
   useEffect(() => {
     track({ eventType: "visit" });
   }, []);
+
+  useEffect(() => {
+    const syncProfile = async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      if (!user) return;
+      const metadata = user.user_metadata as Record<string, unknown>;
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        email: user.email ?? null,
+        display_name: typeof metadata["full_name"] === "string" ? metadata["full_name"] : null,
+        avatar_url: typeof metadata["avatar_url"] === "string" ? metadata["avatar_url"] : null,
+        updated_at: new Date().toISOString(),
+      });
+    };
+    void syncProfile();
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      void router.invalidate();
+      if (session) void syncProfile();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router]);
 
 
 
   return (
     <>
       <Ambience />
-      {!booted && (
+      {!isAuthPage && !booted && (
         <BootScreen onDone={() => setBooted(true)} reduceMotion={settings.reduceMotion} />
       )}
       <div className="min-h-screen">
         <Outlet />
       </div>
-      <NavBar />
+      {!isAuthPage && <NavBar />}
       <Toaster position="top-center" />
     </>
   );
