@@ -7,7 +7,7 @@ import { useJarvis, type PermissionKey, type Settings as S } from "@/lib/jarvis-
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Settings — Jarvis" },

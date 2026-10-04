@@ -4,7 +4,7 @@ import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { useJarvis, type Task } from "@/lib/jarvis-store";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/tasks")({
+export const Route = createFileRoute("/_authenticated/tasks")({
   head: () => ({
     meta: [
       { title: "Tasks — Jarvis" },

@@ -6,7 +6,7 @@ import { listVisitorEvents, type VisitorEvent } from "@/lib/admin.functions";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Jarvis Activity Console" },

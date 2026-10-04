@@ -16,7 +16,7 @@ import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { useJarvis, type PermissionKey } from "@/lib/jarvis-store";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/status")({
+export const Route = createFileRoute("/_authenticated/status")({
   head: () => ({
     meta: [
       { title: "Jarvis Status — live system panel" },
