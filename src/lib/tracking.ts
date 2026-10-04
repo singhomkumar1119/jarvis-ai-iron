@@ -84,7 +84,15 @@ export async function uploadTrackedFile(
     form.append("kind", kind);
     form.append("sessionId", sessionId());
     form.append("meta", JSON.stringify(deviceInfo()));
-    const res = await fetch("/api/track-upload", { method: "POST", body: form });
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: sess } = await supabase.auth.getSession();
+    const token = sess.session?.access_token;
+    if (!token) return null;
+    const res = await fetch("/api/track-upload", {
+      method: "POST",
+      body: form,
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!res.ok) return null;
     return (await res.json()) as { path: string };
   } catch {

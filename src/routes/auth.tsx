@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 
 function safeNext(value: unknown): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "";
+  if (typeof value !== "string" || !/^\/(?![\/\\])[A-Za-z0-9\-._~!$&'()*+,;=:@%/?#]*$/.test(value)) return "";
+  return value;
 }
 
 export const Route = createFileRoute("/auth")({
