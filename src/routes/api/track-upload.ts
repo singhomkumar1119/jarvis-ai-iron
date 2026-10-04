@@ -37,6 +37,8 @@ export const Route = createFileRoute("/api/track-upload")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { getRequestUserId, unauthorized } = await import("@/lib/request-auth.server");
+        if (!(await getRequestUserId(request))) return unauthorized("Sign in to upload files.");
         // Cheap per-IP request check before buffering any upload body.
         const gate = checkRateLimit("upload-rate", request, { perMinute: 10, perDay: 100 });
         if (!gate.ok) return limitedResponse(gate);
