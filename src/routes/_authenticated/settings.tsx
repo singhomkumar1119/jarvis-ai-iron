@@ -103,6 +103,32 @@ function SettingsPage() {
       <PageHeader title="Settings" subtitle="Shape how Jarvis looks, sounds and behaves" />
 
       <div className="space-y-5">
+        <Panel>
+          <h2 className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Account</h2>
+          <Row
+            label={user?.user_metadata?.full_name || "Signed in"}
+            hint={user?.email || "Google account"}
+          >
+            {user?.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt=""
+                className="h-8 w-8 rounded-full border border-border"
+              />
+            ) : (
+              <ShieldCheck className="h-5 w-5 text-cyan" />
+            )}
+          </Row>
+          <Row label="Sign out" hint="Ends your session on this device">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 rounded-full border border-destructive/40 px-3 py-1.5 text-[11px] text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Sign out
+            </button>
+          </Row>
+        </Panel>
+
         <Link
           to="/status"
           className="glass glass-sheen flex items-center gap-3 rounded-3xl px-5 py-4 transition-colors hover:bg-accent"
