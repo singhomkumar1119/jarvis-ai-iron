@@ -1,4 +1,5 @@
-import { createServerFn, getRequest } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
 import type { VisitorEvent } from "@/lib/admin.functions";
@@ -33,7 +34,7 @@ export const unlockWithPin = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const request = getRequest();
     const limited = checkRateLimit("owner-pin", request, { perMinute: 5, perDay: 30 });
-    if (limited) throw limitedResponse(limited);
+    if (!limited.ok) throw limitedResponse(limited);
 
     const secret = process.env["OWNER_PIN"];
     if (!secret) throw new Error("Owner PIN is not configured");
@@ -54,7 +55,7 @@ export const listVisitorEventsWithPin = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ events: VisitorEvent[] }> => {
     const request = getRequest();
     const limited = checkRateLimit("owner-pin", request, { perMinute: 30, perDay: 300 });
-    if (limited) throw limitedResponse(limited);
+    if (!limited.ok) throw limitedResponse(limited);
 
     const secret = process.env["OWNER_PIN"];
     if (!secret || !verifyOwnerToken(data.token, secret)) {
