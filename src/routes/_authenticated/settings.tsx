@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Activity as ActivityIcon, ChevronRight, Trash2 } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Activity as ActivityIcon, ChevronRight, LogOut, ShieldCheck, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
