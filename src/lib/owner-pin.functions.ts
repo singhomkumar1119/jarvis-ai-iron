@@ -1,31 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { createHmac, timingSafeEqual } from "crypto";
 import { checkRateLimit, limitedResponse } from "@/lib/rate-limit";
 import type { VisitorEvent } from "@/lib/admin.functions";
-
-const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
-
-function sign(payload: string, secret: string): string {
-  return createHmac("sha256", secret).update(payload).digest("hex");
-}
-
-function makeToken(secret: string): string {
-  const exp = Date.now() + TOKEN_TTL_MS;
-  return `${exp}.${sign(`owner:${exp}`, secret)}`;
-}
-
-export function verifyOwnerToken(token: string, secret: string): boolean {
-  const dot = token.indexOf(".");
-  if (dot <= 0) return false;
-  const exp = Number(token.slice(0, dot));
-  const mac = token.slice(dot + 1);
-  if (!Number.isFinite(exp) || exp < Date.now()) return false;
-  const expected = sign(`owner:${exp}`, secret);
-  const a = Buffer.from(mac);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 export const unlockWithPin = createServerFn({ method: "POST" })
   .inputValidator((input: { pin?: string } | undefined) => ({
@@ -39,12 +15,10 @@ export const unlockWithPin = createServerFn({ method: "POST" })
     const secret = process.env["OWNER_PIN"];
     if (!secret) throw new Error("Owner PIN is not configured");
 
-    const a = Buffer.from(data.pin);
-    const b = Buffer.from(secret);
-    const ok = a.length === b.length && timingSafeEqual(a, b);
-    if (!ok) throw new Error("Wrong PIN");
+    const { safeEqual, makeOwnerToken } = await import("@/lib/owner-pin.server");
+    if (!safeEqual(data.pin, secret)) throw new Error("Wrong PIN");
 
-    return { token: makeToken(secret) };
+    return { token: makeOwnerToken(secret) };
   });
 
 export const listVisitorEventsWithPin = createServerFn({ method: "POST" })
@@ -58,6 +32,7 @@ export const listVisitorEventsWithPin = createServerFn({ method: "POST" })
     if (!limited.ok) throw limitedResponse(limited);
 
     const secret = process.env["OWNER_PIN"];
+    const { verifyOwnerToken } = await import("@/lib/owner-pin.server");
     if (!secret || !verifyOwnerToken(data.token, secret)) {
       throw new Error("Forbidden");
     }
