@@ -156,7 +156,7 @@ function JarvisShell() {
   const { booted, setBooted, settings } = useJarvis();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const router = useRouter();
-  const isAuthPage = pathname === "/auth";
+  const isAuthPage = pathname === "/auth" || pathname === "/owner";
 
   useEffect(() => {
     track({ eventType: "visit" });
