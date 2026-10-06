@@ -16,30 +16,20 @@ export async function getOrCreateBalance(userId: string): Promise<number> {
     .select("balance")
     .eq("user_id", userId)
     .maybeSingle();
-  if (data) return data.balance as number;
+  if (data) return data.balance;
   const { data: created, error } = await sb
     .from("user_token_balances")
     .insert({ user_id: userId, balance: STARTING_BALANCE })
     .select("balance")
     .single();
   if (error || !created) return STARTING_BALANCE;
-  return created.balance as number;
+  return created.balance;
 }
 
-/** Atomically spend `cost` tokens. Returns remaining balance, or null if insufficient. */
+/** Spend `cost` tokens with a guarded compare-and-write. Returns remaining balance, or null if insufficient. */
 export async function tryConsume(userId: string, cost: number): Promise<number | null> {
   await getOrCreateBalance(userId);
   const sb = await admin();
-  const { data } = await sb
-    .from("user_token_balances")
-    .update({ balance: undefined as never, updated_at: new Date().toISOString() })
-    .eq("user_id", userId)
-    .gte("balance", cost)
-    .select("balance")
-    .maybeSingle();
-  void data;
-  // Use an RPC-style decrement via raw update is not atomic with PostgREST;
-  // do a guarded read-then-write loop instead.
   for (let attempt = 0; attempt < 3; attempt++) {
     const { data: row } = await sb
       .from("user_token_balances")
@@ -47,17 +37,16 @@ export async function tryConsume(userId: string, cost: number): Promise<number |
       .eq("user_id", userId)
       .single();
     if (!row) return null;
-    const balance = row.balance as number;
-    if (balance < cost) return null;
-    const next = balance - cost;
+    if (row.balance < cost) return null;
+    const next = row.balance - cost;
     const { data: updated, error } = await sb
       .from("user_token_balances")
       .update({ balance: next, updated_at: new Date().toISOString() })
       .eq("user_id", userId)
-      .eq("balance", balance)
+      .eq("balance", row.balance)
       .select("balance")
       .maybeSingle();
-    if (!error && updated) return updated.balance as number;
+    if (!error && updated) return updated.balance;
   }
   return null;
 }
