@@ -222,8 +222,11 @@ function SettingsPage() {
 
         <Panel>
           <h2 className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Privacy & permissions
+            Privacy & security
           </h2>
+          <Row label="Secure sign-in" hint="Your account is protected by Google sign-in">
+            <ShieldCheck className="h-4.5 w-4.5 text-cyan" />
+          </Row>
           {PERMS.map((p) => (
             <Row
               key={p.key}
