@@ -84,8 +84,19 @@ const PERMS: { key: PermissionKey; label: string }[] = [
 function SettingsPage() {
   const { settings, updateSettings, permissions, requestPermission, revokePermission, clearHistory } =
     useJarvis();
+  const { user } = Route.useRouteContext() as { user?: { email?: string; user_metadata?: { full_name?: string; avatar_url?: string } } };
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const set = <K extends keyof S>(k: K, v: S[K]) => updateSettings({ [k]: v } as Partial<S>);
+
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    toast("Signed out");
+    navigate({ to: "/auth", replace: true });
+  }
 
   return (
     <Page>
