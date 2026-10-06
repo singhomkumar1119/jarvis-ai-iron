@@ -62,6 +62,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_token_balances: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       visitor_events: {
         Row: {
           browser: string | null
