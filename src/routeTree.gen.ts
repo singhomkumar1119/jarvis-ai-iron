@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
@@ -39,6 +40,11 @@ const AuthRoute = AuthRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/owner': typeof OwnerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/owner': typeof OwnerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/owner': typeof OwnerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/mcp'
+    | '/owner'
     | '/sitemap.xml'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/mcp'
+    | '/owner'
     | '/sitemap.xml'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/mcp'
+    | '/owner'
     | '/sitemap.xml'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   McpRoute: typeof McpRoute
+  OwnerRoute: typeof OwnerRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -391,6 +411,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   McpRoute: McpRoute,
+  OwnerRoute: OwnerRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
