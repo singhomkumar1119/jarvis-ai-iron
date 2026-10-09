@@ -11,3 +11,5 @@
 
 - Keep all Jarvis workspace screens under the `_authenticated` route layout; `/auth` remains the public entrance so access control stays centralized.
 - Store user-facing Google identity fields in `public.profiles`; authentication identity remains owned by Lovable Cloud.
+
+- Chat history lives in a server-written per-user table readable only by its owner via RLS; the chat route writes it so clients cannot forge entries.
