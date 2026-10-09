@@ -259,9 +259,11 @@ export const Route = createFileRoute("/api/chat")({
             async start(controller) {
               let emitted = 0;
               let reasoning = "";
+              let answerText = "";
               const enqueue = (text: string) => {
                 if (!text) return;
                 emitted += text.length;
+                answerText += text;
                 controller.enqueue(encoder.encode(text));
               };
 
@@ -307,6 +309,19 @@ export const Route = createFileRoute("/api/chat")({
                 }
               } finally {
                 controller.close();
+                try {
+                  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                  const question = String(messages[messages.length - 1]?.content ?? "").slice(0, 8000);
+                  await supabaseAdmin.from("chat_history").insert({
+                    user_id: userId,
+                    channel: String(channel),
+                    question,
+                    answer: answerText.slice(0, 40000),
+                    model: selectedModelId,
+                  });
+                } catch {
+                  // history saving must never break a reply
+                }
               }
             },
           });
