@@ -43,7 +43,10 @@ function HistoryPage() {
     if (!u.user) return;
     const q = supabase.from("chat_history").delete().eq("user_id", u.user.id);
     const { error } = id ? await q.eq("id", id) : await q;
-    if (error) return toast.error("Couldn't delete");
+    if (error) {
+      toast.error("Couldn't delete");
+      return;
+    }
     toast(id ? "Chat deleted" : "History cleared");
     qc.invalidateQueries({ queryKey: ["chat-history"] });
   }
