@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { Activity as ActivityIcon, ChevronRight, LogOut, ShieldCheck, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Activity as ActivityIcon, ChevronRight, Coins, LogOut, ShieldCheck, Trash2 } from "lucide-react";
+import { getTokenBalance } from "@/lib/tokens.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Page, PageHeader, Panel } from "@/components/jarvis/Shell";
 import { Switch } from "@/components/ui/switch";
@@ -81,6 +82,35 @@ const PERMS: { key: PermissionKey; label: string }[] = [
   { key: "weather", label: "Weather access" },
 ];
 
+function TokenPanel() {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["jarvis-tokens"],
+    queryFn: () => getTokenBalance(),
+  });
+  const balance = data?.balance ?? 0;
+  const starting = data?.starting ?? 500;
+  const pct = Math.max(0, Math.min(100, (balance / starting) * 100));
+  return (
+    <Panel>
+      <h2 className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Jarvis tokens</h2>
+      <Row
+        label={isLoading ? "Loading…" : `${balance} of ${starting} tokens left`}
+        hint={balance <= 0 && !isLoading ? "Out of tokens — chat and search are paused" : "Each chat or search uses 1 token"}
+      >
+        <button
+          onClick={() => refetch()}
+          className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Coins className="h-3.5 w-3.5 text-cyan" /> Refresh
+        </button>
+      </Row>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
+      </div>
+    </Panel>
+  );
+}
+
 function SettingsPage() {
   const { settings, updateSettings, permissions, requestPermission, revokePermission, clearHistory } =
     useJarvis();
@@ -128,6 +158,8 @@ function SettingsPage() {
             </button>
           </Row>
         </Panel>
+
+        <TokenPanel />
 
         <Link
           to="/status"
