@@ -38,15 +38,12 @@ function highlight(source: string) {
 
 export function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1.5 px-1 py-2" aria-label="Jarvis is responding">
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="h-1.5 w-1.5 rounded-full bg-cyan"
-          style={{ animation: `dot 1.2s ease-in-out ${i * 0.15}s infinite` }}
-        />
-      ))}
-      <span className="ml-2 text-xs text-muted-foreground">Jarvis is composing…</span>
+    <div className="flex items-center gap-3 py-1" aria-label="Jarvis is thinking" role="status">
+      <span className="relative flex h-4 w-4 items-center justify-center">
+        <span className="absolute inset-0 rounded-full bg-cyan/40" style={{ animation: "think-pulse 1.6s ease-out infinite" }} />
+        <span className="h-2.5 w-2.5 rounded-full bg-cyan" style={{ animation: "think-breathe 1.6s ease-in-out infinite" }} />
+      </span>
+      <span className="think-shimmer text-sm font-medium">Thinking…</span>
     </div>
   );
 }
@@ -94,7 +91,7 @@ export function ChatMessage({
                 : "glass-soft text-foreground",
           )}
         >
-          {message.text || (message.streaming ? <TypingIndicator /> : null)}
+          {message.streaming && !isUser ? <TypingIndicator /> : message.text}
           {message.attachments?.length ? (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {message.attachments.map((a) => (
