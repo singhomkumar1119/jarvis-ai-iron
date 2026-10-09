@@ -103,8 +103,19 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const { getRequestUserId, unauthorized } = await import("@/lib/request-auth.server");
-        if (!(await getRequestUserId(request))) {
+        const userId = await getRequestUserId(request);
+        if (!userId) {
           return unauthorized("Please sign in to chat with Jarvis.");
+        }
+        {
+          const { tryConsume, CHAT_COST } = await import("@/lib/tokens.server");
+          const remaining = await tryConsume(userId, CHAT_COST);
+          if (remaining === null) {
+            return new Response(
+              "You're out of Jarvis tokens. Chat and search are paused until your balance is topped up.",
+              { status: 402 },
+            );
+          }
         }
         const limited = rateLimit(request);
         if (!limited.ok) {
