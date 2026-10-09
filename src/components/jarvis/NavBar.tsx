@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessagesSquare, TerminalSquare, ListChecks, Settings2 } from "lucide-react";
+import { Home, MessagesSquare, TerminalSquare, ListChecks, Settings2, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { to: "/", label: "Home", icon: Home },
   { to: "/chats", label: "Chats", icon: MessagesSquare },
+  { to: "/history", label: "History", icon: History },
   { to: "/terminal", label: "Terminal", icon: TerminalSquare },
   { to: "/tasks", label: "Tasks", icon: ListChecks },
   { to: "/settings", label: "Settings", icon: Settings2 },
