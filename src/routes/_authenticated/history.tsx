@@ -40,7 +40,9 @@ function HistoryPage() {
 
   async function remove(id?: string) {
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
+    if (!u.user) {
+      return;
+    }
     const q = supabase.from("chat_history").delete().eq("user_id", u.user.id);
     const { error } = id ? await q.eq("id", id) : await q;
     if (error) {
