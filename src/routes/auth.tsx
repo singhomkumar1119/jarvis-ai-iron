@@ -254,9 +254,6 @@ function AuthPage() {
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-ok" /> Encrypted</span>
             <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-cyan" /> Session remembered</span>
           </div>
-          <Link to="/owner" className="mt-4 block text-center text-[11px] text-muted-foreground/70 hover:text-foreground">
-            Owner access
-          </Link>
         </div>
       </section>
 
