@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/terminal")({
       },
       { property: "og:title", content: "Terminal — Jarvis" },
       { property: "og:description", content: "Run technical commands through Jarvis in terminal mode." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Terminal,

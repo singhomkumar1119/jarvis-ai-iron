@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/")({
           "Jarvis is a premium AI assistant with a cinematic glass interface, voice-reactive orb, terminal mode and real-time status.",
       },
       { property: "og:title", content: "Jarvis — Your cinematic AI assistant" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Talk to Jarvis — a cinematic AI assistant that answers, speaks aloud, listens to your voice and opens your favourite apps.",
@@ -73,7 +75,7 @@ function Home() {
   }, [booted]);
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-4 pb-64 pt-16">
+    <main className="jarvis-home relative mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center justify-center overflow-hidden px-4 pt-16 sm:pt-20">
       <Link
         to="/status"
         className="glass-soft absolute right-4 top-6 flex items-center gap-2 rounded-full px-3.5 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground sm:right-6"
@@ -91,15 +93,15 @@ function Home() {
         onPress={() => (activity === "speaking" ? stop() : toggleListening())}
       />
 
-      <div className="mt-10 animate-rise text-center">
-        <h1 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
+      <div className="mt-5 min-w-0 animate-rise text-center sm:mt-10">
+        <h1 className="text-2xl font-medium text-foreground sm:text-4xl">
           Jarvis — Your Cinematic AI Assistant
         </h1>
         <p className="mt-3 text-base text-foreground/90">{copy.title}</p>
         <p className="mt-2 text-sm text-muted-foreground">{copy.sub}</p>
       </div>
 
-      <div className="mt-8 flex flex-wrap justify-center gap-2">
+      <div className="mt-5 flex flex-wrap justify-center gap-2 sm:mt-8">
         {["Summarize my day", "Write a shell script", "Explain this error"].map((s) => (
           <span
             key={s}

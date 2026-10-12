@@ -22,9 +22,9 @@ export function NavBar() {
   return (
     <nav
       aria-label="Primary"
-      className="pointer-events-auto fixed bottom-4 left-1/2 z-50 w-[min(560px,calc(100%-1.5rem))] -translate-x-1/2"
+      className="jarvis-nav pointer-events-auto fixed left-1/2 z-50 -translate-x-1/2"
     >
-      <div className="glass glass-sheen relative grid grid-cols-6 gap-1 rounded-3xl p-1.5">
+      <div className="jarvis-nav-inner glass glass-sheen relative grid grid-cols-6 gap-1 rounded-3xl p-1.5">
         <span
           aria-hidden
           className="absolute bottom-1.5 top-1.5 rounded-[1.15rem] transition-[transform,width] duration-500"
@@ -41,13 +41,14 @@ export function NavBar() {
           <Link
             key={to}
             to={to}
+            aria-current={i === activeIndex ? "page" : undefined}
             className={cn(
-              "relative z-10 flex flex-col items-center gap-1 rounded-[1.15rem] px-0.5 py-2 text-[10px] min-w-0 truncate font-medium tracking-wide transition-colors duration-300",
+              "relative z-10 flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1.15rem] px-0.5 py-2 text-[10px] font-medium transition-colors duration-300 sm:flex-row sm:gap-2 sm:text-xs",
               i === activeIndex ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon className={cn("h-[18px] w-[18px] transition-transform duration-300", i === activeIndex && "scale-110")} />
-            <span>{label}</span>
+            <Icon className={cn("h-[18px] w-[18px] shrink-0 transition-transform duration-300", i === activeIndex && "scale-110")} />
+            <span className="min-w-0 truncate">{label}</span>
           </Link>
         ))}
       </div>

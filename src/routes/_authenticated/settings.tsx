@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/settings")({
       },
       { property: "og:title", content: "Settings — Jarvis" },
       { property: "og:description", content: "Personality, voice, theme, motion and privacy controls." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: SettingsPage,
@@ -29,18 +31,20 @@ function Row({
   label,
   hint,
   children,
+  wide = false,
 }: {
   label: string;
   hint?: string;
   children: React.ReactNode;
+  wide?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 border-b border-border py-3.5 last:border-0">
+    <div className={cn("grid items-center gap-3 border-b border-border py-3.5 last:border-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-6", wide ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_auto]")}>
       <div className="min-w-0">
         <p className="text-sm text-foreground">{label}</p>
-        {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
+        {hint && <p className="mt-0.5 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">{hint}</p>}
       </div>
-      <div className="shrink-0">{children}</div>
+      <div className="min-w-0 sm:justify-self-end">{children}</div>
     </div>
   );
 }
@@ -55,13 +59,13 @@ function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="glass-soft flex gap-0.5 rounded-full p-0.5">
+    <div className="glass-soft flex flex-wrap gap-0.5 rounded-2xl p-0.5 sm:flex-nowrap sm:rounded-full">
       {options.map((o) => (
         <button
           key={o}
           onClick={() => onChange(o)}
           className={cn(
-            "rounded-full px-3 py-1.5 text-[11px] capitalize transition-all duration-300",
+            "min-w-0 flex-1 rounded-full px-2 py-2 text-[11px] capitalize transition-all duration-300 sm:px-3 sm:py-1.5",
             value === o
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",
@@ -129,7 +133,7 @@ function SettingsPage() {
   }
 
   return (
-    <Page>
+    <Page padBottom={false}>
       <PageHeader title="Settings" subtitle="Shape how Jarvis looks, sounds and behaves" />
 
       <div className="space-y-5">
@@ -172,7 +176,7 @@ function SettingsPage() {
 
         <Panel>
           <h2 className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Assistant</h2>
-          <Row label="Jarvis personality">
+          <Row label="Jarvis personality" wide>
             <Segmented
               value={settings.personality}
               options={["concise", "balanced", "playful", "technical"] as const}
@@ -182,17 +186,17 @@ function SettingsPage() {
           <Row label="Speak replies aloud" hint="Jarvis reads answers using your device voice">
             <Switch aria-label="Speak replies aloud" checked={settings.speakReplies} onCheckedChange={(v) => set("speakReplies", v)} />
           </Row>
-          <Row label="Voice">
+          <Row label="Voice" wide>
             <Segmented
               value={settings.voice}
               options={["atlas", "nova", "orion", "lumen"] as const}
               onChange={(v) => set("voice", v)}
             />
           </Row>
-          <Row label="Voice speed" hint={`${settings.voiceSpeed.toFixed(2)}×`}>
+          <Row label="Voice speed" hint={`${settings.voiceSpeed.toFixed(2)}×`} wide>
             <Slider
               aria-label="Voice speed"
-              className="w-44"
+              className="w-full py-2 sm:w-44"
               min={0.5}
               max={2}
               step={0.05}
@@ -200,10 +204,10 @@ function SettingsPage() {
               onValueChange={([v]) => set("voiceSpeed", v ?? 1)}
             />
           </Row>
-          <Row label="Voice tone" hint="Warmer ↔ brighter">
+          <Row label="Voice tone" hint="Warmer ↔ brighter" wide>
             <Slider
               aria-label="Voice tone"
-              className="w-44"
+              className="w-full py-2 sm:w-44"
               min={0}
               max={1}
               step={0.05}
@@ -215,24 +219,24 @@ function SettingsPage() {
 
         <Panel>
           <h2 className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Appearance</h2>
-          <Row label="Theme" hint="Dark cinematic is the default">
+          <Row label="Theme" hint="Dark cinematic is the default" wide>
             <Segmented
               value={settings.theme}
               options={["dark", "light", "auto"] as const}
               onChange={(v) => set("theme", v)}
             />
           </Row>
-          <Row label="Blob appearance">
+          <Row label="Blob appearance" wide>
             <Segmented
               value={settings.blobStyle}
               options={["aurora", "plasma", "glacier", "ember"] as const}
               onChange={(v) => set("blobStyle", v)}
             />
           </Row>
-          <Row label="Animation intensity" hint={`${Math.round(settings.animationIntensity * 100)}%`}>
+          <Row label="Animation intensity" hint={`${Math.round(settings.animationIntensity * 100)}%`} wide>
             <Slider
               aria-label="Animation intensity"
-              className="w-44"
+              className="w-full py-2 sm:w-44"
               min={0}
               max={1}
               step={0.05}

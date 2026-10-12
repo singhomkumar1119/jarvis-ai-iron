@@ -145,7 +145,7 @@ function AuthPage() {
     }`;
 
   return (
-    <main className="auth-stage relative isolate flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
+    <main className="auth-stage relative isolate flex min-h-dvh flex-col items-center justify-center gap-6 overflow-hidden px-4 py-8 sm:px-5 sm:py-10">
       <div aria-hidden className="auth-spectrum absolute inset-0" />
       <div aria-hidden className="auth-light-streak auth-light-streak-one" />
       <div aria-hidden className="auth-light-streak auth-light-streak-two" />
@@ -153,7 +153,7 @@ function AuthPage() {
       <section className="auth-glass relative z-10 w-full max-w-md overflow-hidden rounded-[2rem] p-6 sm:p-8">
         <div className="auth-scanline" aria-hidden />
         <div className="relative">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-foreground">JARVIS</p>
             <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ok" /> Secure channel
@@ -165,7 +165,7 @@ function AuthPage() {
           </div>
 
           <p className="mb-3 text-xs uppercase tracking-[0.28em] text-cyan">Identity verification</p>
-          <h1 className="max-w-sm text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+          <h1 className="max-w-sm text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
             Welcome to <span className="text-gradient">Jarvis.</span>
           </h1>
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
@@ -174,7 +174,7 @@ function AuthPage() {
 
           <div className="my-6 h-px bg-border" />
 
-          <div className="mb-5 flex gap-1 rounded-2xl border border-glass-border bg-glass p-1" role="tablist" aria-label="Sign-in method">
+          <div className="mb-5 grid grid-cols-3 gap-1 rounded-2xl border border-glass-border bg-glass p-1" role="tablist" aria-label="Sign-in method">
             <button type="button" role="tab" aria-selected={method === "google"} className={tabCls("google")} onClick={() => setMethod("google")}>
               Google
             </button>
@@ -257,7 +257,7 @@ function AuthPage() {
         </div>
       </section>
 
-      <p className="absolute bottom-6 z-10 text-center text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+      <p className="relative z-10 text-center text-[10px] uppercase text-muted-foreground">
         Personal intelligence · Private by design
       </p>
     </main>

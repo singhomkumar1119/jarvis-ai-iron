@@ -65,6 +65,10 @@
 
 :root {
   --radius: 1rem;
+  --dock-edge: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  --dock-height: 4.25rem;
+  --composer-bottom: calc(var(--dock-edge) + var(--dock-height) + 0.75rem);
+  --page-bottom: calc(var(--composer-bottom) + 7rem);
 
   --background: oklch(0.14 0.012 265);
   --foreground: oklch(0.97 0.004 260);
@@ -141,6 +145,8 @@
   html,
   body {
     height: 100%;
+    min-width: 0;
+    scroll-padding-bottom: var(--page-bottom);
   }
 
   body {
@@ -164,6 +170,18 @@
     background: var(--glass-border);
     border-radius: 999px;
   }
+}
+
+/* Shared dock dimensions keep navigation and message controls separated. */
+.jarvis-nav { bottom: var(--dock-edge); width: min(36rem, calc(100% - 1rem)); }
+.jarvis-nav-inner { height: var(--dock-height); }
+.jarvis-composer { bottom: var(--composer-bottom); width: min(48rem, calc(100% - 1.5rem)); }
+.jarvis-page { padding-bottom: var(--page-bottom); }
+.jarvis-page-no-composer { padding-bottom: calc(var(--dock-edge) + var(--dock-height) + 2rem); }
+.jarvis-home { min-height: 100dvh; padding-bottom: var(--page-bottom); }
+@media (min-width: 640px) {
+  :root { --dock-edge: max(1rem, env(safe-area-inset-bottom, 0px)); --dock-height: 4rem; }
+  .jarvis-nav { width: min(44rem, calc(100% - 3rem)); }
 }
 
 /* ---------- Liquid glass materials ---------- */

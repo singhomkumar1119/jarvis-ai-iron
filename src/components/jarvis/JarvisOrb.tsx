@@ -52,8 +52,8 @@ export function JarvisOrb({
       type="button"
       onClick={onPress}
       aria-label="Jarvis orb"
-      className="group relative grid place-items-center rounded-full outline-none focus-visible:focus-glow"
-      style={{ width: size, height: size, transform: `scale(${scale})`, transition: "transform 700ms cubic-bezier(0.16,1,0.3,1)" }}
+      className="group relative grid shrink-0 place-items-center rounded-full outline-none focus-visible:focus-glow"
+      style={{ width: `min(${size}px, 68vw, 36dvh)`, aspectRatio: "1", transform: `scale(${scale})`, transition: "transform 700ms cubic-bezier(0.16,1,0.3,1)" }}
     >
       {/* ambient gradient lighting */}
       <span

@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_authenticated/tasks")({
       { name: "description", content: "Track what Jarvis is working on, with live progress for each task." },
       { property: "og:title", content: "Tasks — Jarvis" },
       { property: "og:description", content: "Live progress for everything Jarvis is running." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Tasks,
@@ -34,7 +36,7 @@ function Tasks() {
   const { tasks } = useJarvis();
 
   return (
-    <Page>
+    <Page padBottom={false}>
       <PageHeader title="Tasks" subtitle="What Jarvis is working on right now" />
       <h2 className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">Active and queued tasks</h2>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -48,7 +50,7 @@ function Tasks() {
                 />
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-medium text-foreground">{t.title}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{t.detail}</p>
+                  <p className="mt-0.5 break-words text-xs text-muted-foreground">{t.detail}</p>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full transition-[width] duration-700"
