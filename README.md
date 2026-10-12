@@ -244,7 +244,7 @@ This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://jarvis-ai-iron.lovable.app).
+Continue developing this project in the [Lovable editor](https://jarvis-ai-iron.lovable.app)
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
