@@ -41,18 +41,18 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="flex items-end justify-between gap-4 pb-6">
-      <div className="animate-rise">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 pb-6 sm:flex sm:justify-between sm:gap-4">
+      <div className="min-w-0 animate-rise">
+        <h1 className="break-words text-2xl font-semibold text-foreground sm:text-3xl">{title}</h1>
+        {subtitle && <p className="mt-1 break-words text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </header>
   );
 }
 
 export function Panel({ className, children }: { className?: string; children: ReactNode }) {
-  return <section className={cn("glass rounded-3xl p-5", className)}>{children}</section>;
+  return <section className={cn("glass min-w-0 rounded-3xl p-4 sm:p-5", className)}>{children}</section>;
 }
 
 export function Page({
@@ -67,8 +67,8 @@ export function Page({
   return (
     <main
       className={cn(
-        "mx-auto w-full max-w-5xl px-4 pt-10 sm:px-6",
-        padBottom ? "pb-52" : "pb-32",
+        "mx-auto w-full min-w-0 max-w-5xl px-4 pt-6 sm:px-6 sm:pt-10",
+        padBottom ? "jarvis-page" : "jarvis-page-no-composer",
         className,
       )}
     >

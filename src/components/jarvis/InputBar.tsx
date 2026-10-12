@@ -112,7 +112,7 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
   return (
     <div
       ref={wrapRef}
-      className="pointer-events-auto fixed bottom-24 left-1/2 z-40 w-[min(760px,calc(100%-1.5rem))] -translate-x-1/2"
+      className="jarvis-composer pointer-events-auto fixed left-1/2 z-40 -translate-x-1/2"
     >
       {/* Plus menu — morphs out of the plus button */}
       <div
@@ -141,12 +141,12 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
       </div>
 
       {pending.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
+        <div className="mb-2 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
           {pending.map((a) => (
             <button
               key={a.id}
               onClick={() => setPending((p) => p.filter((x) => x.id !== a.id))}
-              className="glass-soft rounded-full px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+              className="glass-soft max-w-full truncate rounded-full px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
               {a.name} ✕
             </button>
@@ -184,8 +184,8 @@ export function InputBar({ channel }: { channel: "chat" | "terminal" }) {
           }}
           placeholder={channel === "terminal" ? "jarvis > run a command…" : "Message Jarvis…"}
           className={cn(
-            "max-h-32 flex-1 resize-none bg-transparent px-1 py-2.5 text-[15px] text-foreground outline-none placeholder:text-muted-foreground",
-            channel === "terminal" && "font-mono text-[13.5px]",
+            "min-w-0 max-h-32 flex-1 resize-none bg-transparent px-1 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground sm:text-[15px]",
+            channel === "terminal" && "font-mono sm:text-[13.5px]",
           )}
         />
 

@@ -74,7 +74,7 @@ export function ChatMessage({
 
   return (
     <div className={cn("flex w-full animate-rise", isUser ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[min(680px,88%)] space-y-2", isUser && "items-end")}>
+      <div className={cn("min-w-0 max-w-[min(680px,94%)] space-y-2 sm:max-w-[min(680px,88%)]", isUser && "items-end")}>
         {!isUser && (
           <span className="ml-1 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
             Jarvis
@@ -82,7 +82,7 @@ export function ChatMessage({
         )}
         <div
           className={cn(
-            "rounded-2xl px-4 py-3 text-[15px] leading-relaxed",
+            "whitespace-pre-wrap rounded-2xl px-4 py-3 text-[15px] leading-relaxed [overflow-wrap:anywhere]",
             mono && "font-mono text-[13px]",
             isUser
               ? "bg-primary text-primary-foreground shadow-[0_18px_40px_-24px_var(--electric)]"
