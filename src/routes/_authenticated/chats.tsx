@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_authenticated/chats")({
       { name: "description", content: "Your conversation history with Jarvis in a calm glass interface." },
       { property: "og:title", content: "Chats — Jarvis" },
       { property: "og:description", content: "Conversation history with Jarvis, streamed in real time." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Chats,

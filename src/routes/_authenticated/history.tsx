@@ -54,7 +54,7 @@ function HistoryPage() {
   }
 
   return (
-    <Page>
+    <Page padBottom={false}>
       <PageHeader title="Chat History" subtitle={email ? `Only chats from ${email}` : "Your chats"} />
       <div className="space-y-4">
         {data.length > 0 && (
@@ -79,8 +79,8 @@ function HistoryPage() {
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
-            <p className="text-sm font-medium text-foreground">{c.question}</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground line-clamp-6">{c.answer}</p>
+            <p className="text-sm font-medium text-foreground [overflow-wrap:anywhere]">{c.question}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground line-clamp-6 [overflow-wrap:anywhere]">{c.answer}</p>
           </Panel>
         ))}
       </div>

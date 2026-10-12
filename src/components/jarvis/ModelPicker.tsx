@@ -46,7 +46,7 @@ export function ModelPicker() {
     : models;
 
   return (
-    <div className="relative" ref={boxRef}>
+    <div className="relative min-w-0" ref={boxRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -58,7 +58,7 @@ export function ModelPicker() {
       </button>
 
       {open && (
-        <div className="glass absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-2xl p-2 shadow-2xl">
+        <div className="glass absolute right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl p-2 shadow-2xl">
           <div className="mb-2 flex items-center gap-2 rounded-xl bg-white/5 px-2.5 py-1.5">
             <Search className="size-3.5 text-muted-foreground" />
             <input

@@ -19,6 +19,16 @@ const oauth = () => (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Connect an agent — Jarvis" },
+      { name: "description", content: "Review an agent's request to connect to your private Jarvis account." },
+      { property: "og:title", content: "Connect an agent — Jarvis" },
+      { property: "og:description", content: "Approve or decline access to your Jarvis account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   validateSearch: (s: Record<string, unknown>) => ({
     authorization_id: typeof s['authorization_id'] === "string" ? (s['authorization_id'] as string) : "",
   }),

@@ -27,6 +27,8 @@ export const Route = createFileRoute("/_authenticated/status")({
       },
       { property: "og:title", content: "Jarvis Status — live system panel" },
       { property: "og:description", content: "Connection, permissions and device telemetry at a glance." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Status,
@@ -55,13 +57,13 @@ function StatusCard({
   action?: { label: string; onClick: () => void };
 }) {
   return (
-    <Panel className="animate-rise flex items-center gap-3.5 p-4">
+    <Panel className="animate-rise grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4">
       <span className="glass-soft grid h-10 w-10 shrink-0 place-items-center rounded-2xl">
         <Icon className="h-4.5 w-4.5 text-cyan" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-        <p className="truncate text-sm font-medium text-foreground">{value}</p>
+        <p className="break-words text-[11px] uppercase text-muted-foreground">{label}</p>
+        <p className="break-words text-sm font-medium text-foreground">{value}</p>
       </div>
       {action ? (
         <button

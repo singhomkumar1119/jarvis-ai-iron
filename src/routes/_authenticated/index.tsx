@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/")({
           "Jarvis is a premium AI assistant with a cinematic glass interface, voice-reactive orb, terminal mode and real-time status.",
       },
       { property: "og:title", content: "Jarvis — Your cinematic AI assistant" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Talk to Jarvis — a cinematic AI assistant that answers, speaks aloud, listens to your voice and opens your favourite apps.",

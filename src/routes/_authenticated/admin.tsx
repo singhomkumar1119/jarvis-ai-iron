@@ -134,7 +134,7 @@ function AdminPage() {
             {shown.length === 0 && <Panel>No activity recorded yet.</Panel>}
             {shown.map((e) => (
               <Panel key={e.id} className="p-4">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="flex min-w-0 flex-wrap items-center gap-2 text-[11px] text-muted-foreground [overflow-wrap:anywhere]">
                   <span className="glass-soft rounded-full px-2.5 py-1 capitalize text-foreground/90">
                     {e.event_type}
                   </span>
@@ -150,7 +150,7 @@ function AdminPage() {
                 </div>
 
                 {e.content && (
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{e.content}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-foreground [overflow-wrap:anywhere]">{e.content}</p>
                 )}
 
                 {e.file_path && (
@@ -159,7 +159,7 @@ function AdminPage() {
                       <img
                         src={e.file_url}
                         alt={e.file_name ?? "Uploaded image"}
-                        className="h-20 w-20 rounded-xl object-cover"
+                        className="h-20 w-20 shrink-0 rounded-xl object-cover"
                       />
                     )}
                     <div className="min-w-0 text-xs">
