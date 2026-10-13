@@ -272,12 +272,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
         const chunk = decoder.decode(value, { stream: true });
         if (!chunk) continue;
         full += chunk;
-        if (!started) {
-          started = true;
-          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
-        } else {
-          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
-        }
+        setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
       }
 
       const completedText = full.trim();
