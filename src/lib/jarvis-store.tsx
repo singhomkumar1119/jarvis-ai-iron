@@ -230,6 +230,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     const id = uid();
     let started = false;
     let full = "";
+    // Show the thinking bubble right away, before the first token arrives.
+    setMessages((m) => [
+      ...m,
+      { id, role: "jarvis", channel, text: "", createdAt: Date.now(), streaming: true },
+    ]);
 
     try {
       const { supabase } = await import("@/integrations/supabase/client");
@@ -252,10 +257,9 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
 
       if (!res.ok || !res.body) {
         const detail = (await res.text().catch(() => "")) || "Jarvis couldn't reach the AI gateway.";
-        setMessages((m) => [
-          ...m,
-          { id, role: "jarvis", channel, text: detail, createdAt: Date.now(), error: true },
-        ]);
+        setMessages((m) =>
+          m.map((msg) => (msg.id === id ? { ...msg, text: detail, streaming: false, error: true } : msg)),
+        );
         setActivity("idle");
         return;
       }
