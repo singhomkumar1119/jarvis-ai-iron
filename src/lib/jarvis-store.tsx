@@ -274,10 +274,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
         full += chunk;
         if (!started) {
           started = true;
-          setMessages((m) => [
-            ...m,
-            { id, role: "jarvis", channel, text: chunk, createdAt: Date.now(), streaming: true },
-          ]);
+          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
         } else {
           setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
         }
