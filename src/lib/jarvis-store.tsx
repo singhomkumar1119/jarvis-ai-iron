@@ -228,8 +228,12 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     });
 
     const id = uid();
-    let started = false;
     let full = "";
+    // Show the thinking bubble right away, before the first token arrives.
+    setMessages((m) => [
+      ...m,
+      { id, role: "jarvis", channel, text: "", createdAt: Date.now(), streaming: true },
+    ]);
 
     try {
       const { supabase } = await import("@/integrations/supabase/client");
@@ -252,10 +256,9 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
 
       if (!res.ok || !res.body) {
         const detail = (await res.text().catch(() => "")) || "Jarvis couldn't reach the AI gateway.";
-        setMessages((m) => [
-          ...m,
-          { id, role: "jarvis", channel, text: detail, createdAt: Date.now(), error: true },
-        ]);
+        setMessages((m) =>
+          m.map((msg) => (msg.id === id ? { ...msg, text: detail, streaming: false, error: true } : msg)),
+        );
         setActivity("idle");
         return;
       }
@@ -268,15 +271,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
         const chunk = decoder.decode(value, { stream: true });
         if (!chunk) continue;
         full += chunk;
-        if (!started) {
-          started = true;
-          setMessages((m) => [
-            ...m,
-            { id, role: "jarvis", channel, text: chunk, createdAt: Date.now(), streaming: true },
-          ]);
-        } else {
-          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
-        }
+        setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, text: full } : msg)));
       }
 
       const completedText = full.trim();
@@ -288,24 +283,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       const visibleText = completedText || "Jarvis completed the request without an answer. Please retry.";
       const code = extractCode(visibleText);
       setMessages((m) =>
-        started
-          ? m.map((msg) =>
-              msg.id === id
-                ? { ...msg, text: visibleText, streaming: false, code, error: replyFailed }
-                : msg,
-            )
-          : [
-              ...m,
-              {
-                id,
-                role: "jarvis",
-                channel,
-                text: visibleText,
-                createdAt: Date.now(),
-                code,
-                error: replyFailed,
-              },
-            ],
+        m.map((msg) =>
+          msg.id === id
+            ? { ...msg, text: visibleText, streaming: false, code, error: replyFailed }
+            : msg,
+        ),
       );
 
       const spoken = speakableText(visibleText);
@@ -323,19 +305,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if ((error as Error)?.name === "AbortError") return;
       setMessages((m) =>
-        started
-          ? m.map((msg) => (msg.id === id ? { ...msg, streaming: false } : msg))
-          : [
-              ...m,
-              {
-                id,
-                role: "jarvis",
-                channel,
-                text: "Jarvis lost the connection. Try again.",
-                createdAt: Date.now(),
-                error: true,
-              },
-            ],
+        m.map((msg) => (msg.id === id ? { ...msg, streaming: false, error: true, text: msg.text || "Jarvis lost the connection. Try again." } : msg)),
       );
       setActivity("idle");
     }
