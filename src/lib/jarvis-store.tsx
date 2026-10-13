@@ -228,7 +228,6 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     });
 
     const id = uid();
-    let started = false;
     let full = "";
     // Show the thinking bubble right away, before the first token arrives.
     setMessages((m) => [
