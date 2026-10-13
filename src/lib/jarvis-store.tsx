@@ -284,24 +284,11 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
       const visibleText = completedText || "Jarvis completed the request without an answer. Please retry.";
       const code = extractCode(visibleText);
       setMessages((m) =>
-        started
-          ? m.map((msg) =>
-              msg.id === id
-                ? { ...msg, text: visibleText, streaming: false, code, error: replyFailed }
-                : msg,
-            )
-          : [
-              ...m,
-              {
-                id,
-                role: "jarvis",
-                channel,
-                text: visibleText,
-                createdAt: Date.now(),
-                code,
-                error: replyFailed,
-              },
-            ],
+        m.map((msg) =>
+          msg.id === id
+            ? { ...msg, text: visibleText, streaming: false, code, error: replyFailed }
+            : msg,
+        ),
       );
 
       const spoken = speakableText(visibleText);
@@ -319,19 +306,7 @@ export function JarvisProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if ((error as Error)?.name === "AbortError") return;
       setMessages((m) =>
-        started
-          ? m.map((msg) => (msg.id === id ? { ...msg, streaming: false } : msg))
-          : [
-              ...m,
-              {
-                id,
-                role: "jarvis",
-                channel,
-                text: "Jarvis lost the connection. Try again.",
-                createdAt: Date.now(),
-                error: true,
-              },
-            ],
+        m.map((msg) => (msg.id === id ? { ...msg, streaming: false, error: true, text: msg.text || "Jarvis lost the connection. Try again." } : msg)),
       );
       setActivity("idle");
     }
